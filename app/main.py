@@ -66,25 +66,40 @@ async def api_info():
         "app_name": settings.APP_NAME,
         "version": settings.VERSION,
         "architecture": {
-            "spatial_discretization": "Uber H3 Resolution 7 Hexagons (~5.16 km² per node)",
+            "spatial_discretization": "Uber H3 Resolution 7 Hexagons (~5.16 km² per node, 200+ nodes)",
             "model_1": "Live Spatiotemporal Predictor (ST-GNN + Pasquill-Gifford Dynamic Advection + GRU)",
             "model_2": "Causal Trend & Attribution Analyzer (Integrated Gradients + Residual Tracker)",
             "physics_inversion_gate": "Ventilation Index (VI = PBL x Wind Speed < 6000 m²/s)",
-            "policy_simulator": "do-calculus counterfactual intervention engine",
-            "citizen_features": ["Hyper-local AQI", "1-72h Trajectory", "Clean Air Window Optimizer", "Instant Incident Injection"],
-            "government_features": ["Hotspot Causality Matrix", "do-calculus Simulator", "DBSCAN Triage Queue", "Weekly GRAP Audit"]
+            "policy_simulator": "do-calculus counterfactual intervention engine (Hexagon-specific & Citywide)",
+            "citizen_features": ["Bento Grid Mobile UI", "Hyper-local AQI", "Primary Pollution Source", "1-72h Trajectory", "3-Day Daytime Clean Air Planner", "Photo Incident Submission"],
+            "government_features": ["Hotspot Causality Matrix", "do-calculus Simulator", "DBSCAN Triage Queue with Photos", "AI Model Lab & Retraining", "Weekly GRAP Audit"]
         }
     }
 
+@app.get("/citizen", tags=["Apps"])
+async def serve_citizen_app():
+    """Serves the Citizen Mobile Application."""
+    citizen_index = STATIC_DIR / "citizen" / "index.html"
+    if citizen_index.exists():
+        return FileResponse(str(citizen_index))
+    return JSONResponse({"error": "Citizen App not found"}, status_code=404)
+
+@app.get("/gov", tags=["Apps"])
+async def serve_gov_app():
+    """Serves the Government Policy Command Center Application."""
+    gov_index = STATIC_DIR / "gov" / "index.html"
+    if gov_index.exists():
+        return FileResponse(str(gov_index))
+    return JSONResponse({"error": "Government App not found"}, status_code=404)
+
 @app.get("/", tags=["Dashboard"])
-async def serve_dashboard():
-    """Serves the Interactive Verification UI & Dashboard."""
+async def serve_portal():
+    """Serves the Unified App Launcher & Master Portal."""
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
         return FileResponse(str(index_path))
-    return JSONResponse({"message": f"Welcome to {settings.APP_NAME}. Interactive UI is loading."})
+    return JSONResponse({"message": f"Welcome to {settings.APP_NAME}."})
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
-

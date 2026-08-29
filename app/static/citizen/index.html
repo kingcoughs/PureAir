@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Meswak Air | Delhi-NCR Citizen App</title>
+  
+  <!-- Leaflet Free Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Custom Citizen Mobile Styles -->
+  <link rel="stylesheet" href="/static/citizen/styles.css" />
+  
+  <!-- Chart.js & Leaflet JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body data-theme="dark">
+
+  <div class="mobile-wrapper">
+
+    <!-- Top App Bar -->
+    <header class="top-bar">
+      <div class="location-pill" onclick="document.querySelector('[data-target=\'screen-map\']').click();">
+        <span>📍 <span id="current-locality-display">Anand Vihar</span></span>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" onclick="toggleTheme();" title="Toggle Theme">🌓</button>
+        <button class="icon-btn" onclick="document.getElementById('settings-modal').classList.add('active');" title="Server Settings">⚙️</button>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: HOME / BENTO DASHBOARD -->
+    <main id="screen-home" class="app-screen active">
+      
+      <!-- Locality Quick Search -->
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="locality-search-input" list="localities-datalist" class="form-input" placeholder="🔍 Search any Delhi-NCR Sector..." style="margin-bottom:0;" />
+        <datalist id="localities-datalist"></datalist>
+      </div>
+
+      <div class="bento-grid">
+        
+        <!-- Main AQI Bento (2x2) -->
+        <div class="bento-card bento-col-2 aqi-hero-bento">
+          <div class="aqi-hero-header">
+            <div>
+              <span id="current-zone-display" style="font-size:0.75rem; color:var(--text-sub); text-transform:uppercase; font-weight:600;">East Delhi Airshed</span>
+              <div class="aqi-number-group">
+                <span id="main-aqi-number" class="aqi-large-val" style="color:#ef4444;">385</span>
+                <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">AQI</span>
+              </div>
+            </div>
+            <span id="main-aqi-badge" class="aqi-category-badge" style="background:#ef4444; color:#fff;">Severe</span>
+          </div>
+
+          <p style="font-size:0.8rem; color:var(--text-sub);">
+            Dominant Pollutant: <strong id="main-dominant-pollutant" style="color:#fbbf24;">PM2.5</strong>
+          </p>
+
+          <!-- Primary Source Attribution Tag -->
+          <div class="source-tag">
+            <span>🚨</span>
+            <div>
+              <strong>Primary Source:</strong> <span id="main-pollution-source">Inbound Stubble Smoke (42%) + Inversion Trap</span>
+              <div id="main-source-detail" style="font-size:0.72rem; color:var(--text-sub); margin-top:2px;">Transboundary NW biomass plumes trapped by low planetary boundary layer.</div>
+            </div>
+          </div>
+
+          <!-- Expandable Breakdown Button -->
+          <button class="btn-expand" onclick="openDetailsModal();">
+            📊 View Full Pollutants & Weather Breakdown &raquo;
+          </button>
+        </div>
+
+        <!-- Mini Bento: PM2.5 -->
+        <div class="bento-card mini-bento">
+          <label>PM2.5 Level</label>
+          <div class="val" id="mini-pm25-val" style="color:#f87171;">--</div>
+          <div class="sub">CPCB Sensor Ground Truth</div>
+        </div>
+
+        <!-- Mini Bento: Weather Dynamics -->
+        <div class="bento-card mini-bento">
+          <label>Atmosphere</label>
+          <div class="val" id="mini-temp-val">--</div>
+          <div class="sub" id="mini-inversion-status">--</div>
+        </div>
+
+        <!-- Mini Bento: Wind Vector -->
+        <div class="bento-card mini-bento">
+          <label>Wind Transport</label>
+          <div class="val" id="mini-wind-val">--</div>
+          <div class="sub">315° (North-Westerly)</div>
+        </div>
+
+        <!-- Mini Bento: Boundary Layer (PBL) -->
+        <div class="bento-card mini-bento">
+          <label>PBL Height</label>
+          <div class="val" id="mini-pbl-val">--</div>
+          <div class="sub">Inversion Mixing Lid</div>
+        </div>
+
+        <!-- 12-72h Forecast Chart Bento (2x2) -->
+        <div class="bento-card bento-col-2">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="font-size:0.85rem; font-weight:700;">12 to 72-Hour Forecast Trajectory</h4>
+            <span style="font-size:0.68rem; color:var(--accent-cyan);">90% Confidence Bounds</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="citizenForecastCanvas"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- SCREEN 2: AIRSHED MAP -->
+    <main id="screen-map" class="app-screen">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 style="font-size:1rem; font-weight:700;">Delhi-NCR Airshed Hexagonal Map</h3>
+        <span id="map-wind-speed-badge" class="badge" style="background:#0284c7; color:#fff; font-size:0.7rem;">-- m/s</span>
+      </div>
+
+      <!-- Free Map Leaflet Container -->
+      <div id="citizen-map"></div>
+
+      <!-- Wind Compass Overlay & Legend -->
+      <div class="map-legend-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <strong style="font-size:0.8rem; color:var(--accent-cyan);">Atmospheric Dynamic Adjacency ($A(t)$)</strong>
+          <span id="map-wind-dir-badge" style="font-size:0.7rem; color:#94a3b8;">--</span>
+        </div>
+        
+        <div class="legend-item">
+          <div class="legend-line"></div>
+          <span><strong>Blue Dashed Lines:</strong> Directed smoke transport vectors calculated via Pasquill-Gifford plume dispersion and wind speed.</span>
+        </div>
+
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+          <span style="font-size:0.68rem;"><span style="color:#10b981;">●</span> Good (&lt;50)</span>
+          <span style="font-size:0.68rem;"><span style="color:#f59e0b;">●</span> Moderate (&lt;200)</span>
+          <span style="font-size:0.68rem;"><span style="color:#ef4444;">●</span> Very Poor (&lt;400)</span>
+          <span style="font-size:0.68rem;"><span style="color:#dc2626;">●</span> Severe (&gt;450)</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- SCREEN 3: MULTI-DAY CLEAN AIR PLANNER -->
+    <main id="screen-planner" class="app-screen">
+      <h3 style="font-size:1.1rem; font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">🏃 Clean Air Activity Planner</h3>
+      <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:14px;">
+        Finds the lowest cumulative pollutant inhalation window during daytime waking hours (06:00 AM - 09:00 PM) across the next 3 days.
+      </p>
+
+      <div class="bento-grid" style="margin-bottom:14px;">
+        <div class="bento-card">
+          <label style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">ACTIVITY DURATION</label>
+          <select id="planner-duration" class="form-input" style="margin-top:6px; margin-bottom:0;">
+            <option value="1">1 Hour</option>
+            <option value="2" selected>2 Hours</option>
+            <option value="3">3 Hours</option>
+          </select>
+        </div>
+
+        <div class="bento-card">
+          <label style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">ACTIVITY TYPE</label>
+          <select id="planner-activity" class="form-input" style="margin-top:6px; margin-bottom:0;">
+            <option value="Jogging / Outdoor Workout">Jogging / Cardio</option>
+            <option value="Kids Outdoor Play">Kids Outdoor Play</option>
+            <option value="Daily Commute">Daily Commute</option>
+            <option value="Senior Walk">Senior Walk</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="btn-calc-clean-air" class="btn-primary" style="margin-bottom:16px;">
+        ✨ Optimize 3-Day Activity Schedule
+      </button>
+
+      <div id="daily-windows-container"></div>
+    </main>
+
+    <!-- SCREEN 4: CROWDSOURCED INCIDENT REPORTER -->
+    <main id="screen-report" class="app-screen">
+      <h3 style="font-size:1.1rem; font-weight:700; color:#f87171; margin-bottom:4px;">🚨 Crowdsourced Incident Reporter</h3>
+      <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:14px;">
+        Report local garbage fires or dust plumes. Photos & GPS coordinates are instantly dispatched to the Government Command Center.
+      </p>
+
+      <form id="incident-submit-form" class="bento-card" style="padding:18px;">
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">INCIDENT CATEGORY</label>
+        <select id="incident-cat" class="form-input">
+          <option value="garbage_burning">🔥 Open Waste / Garbage Burning</option>
+          <option value="construction_dust">🏗️ Uncovered Construction Dust</option>
+          <option value="industrial_exhaust">🏭 Illegal Industrial Chimney Exhaust</option>
+          <option value="road_dust">🚗 Heavy Road Dust Resuspension</option>
+        </select>
+
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">SEVERITY RATING (1 to 5)</label>
+        <input type="range" id="incident-sev" min="1" max="5" value="4" class="form-input" oninput="document.getElementById('sev-badge').textContent=this.value;" />
+        <span style="font-size:0.75rem; color:var(--text-sub); display:block; margin-top:-6px; margin-bottom:12px;">
+          Severity: <strong id="sev-badge" style="color:#fff;">4</strong> / 5
+        </span>
+
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">DESCRIPTION & LANDMARKS</label>
+        <input type="text" id="incident-desc" class="form-input" placeholder="e.g., Plastic fire near roadside drain" required />
+
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">📷 PHOTO EVIDENCE (OPTIONAL)</label>
+        <input type="file" id="incident-photo-input" accept="image/*" class="form-input" />
+        <img id="incident-photo-preview" src="" style="width:100%; height:140px; object-fit:cover; border-radius:var(--radius-md); display:none; margin-bottom:12px;" />
+
+        <button type="submit" class="btn-primary" style="background:#ef4444;">
+          📢 Submit Report & Inject Impulse
+        </button>
+      </form>
+    </main>
+
+    <!-- SCREEN 5: AQI EDUCATION & HEALTH GUIDE -->
+    <main id="screen-guide" class="app-screen">
+      <h3 style="font-size:1.1rem; font-weight:700; color:var(--accent-purple); margin-bottom:8px;">📖 Understanding AQI & Health</h3>
+      
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#10b981;">🟢 0 - 50: Good</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Minimal impact; ideal air quality for all outdoor sports and cardio.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#84cc16;">🟡 51 - 100: Satisfactory</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Minor breathing discomfort to highly sensitive individuals.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#f59e0b;">🟠 101 - 200: Moderate</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Breathing discomfort to people with asthma and heart disease.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#f97316;">🔴 201 - 300: Poor (GRAP-I)</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Breathing discomfort on prolonged exposure; wear an N95 mask outdoors.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#ef4444;">🟣 301 - 400: Very Poor (GRAP-II)</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Respiratory illness on prolonged exposure; avoid morning cardio.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <h4 style="font-size:0.9rem; color:#dc2626;">🟤 401 - 500+: Severe / Severe+ (GRAP-III & IV)</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Affects healthy people and seriously impacts those with existing diseases. Stay indoors with purifiers.</p>
+      </div>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="screen-home">
+        <span class="icon">🏠</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-target="screen-map">
+        <span class="icon">🗺️</span>
+        <span>Map</span>
+      </button>
+      <button class="nav-item" data-target="screen-planner">
+        <span class="icon">🏃</span>
+        <span>Planner</span>
+      </button>
+      <button class="nav-item" data-target="screen-report">
+        <span class="icon">🚨</span>
+        <span>Report</span>
+      </button>
+      <button class="nav-item" data-target="screen-guide">
+        <span class="icon">📖</span>
+        <span>Guide</span>
+      </button>
+    </nav>
+
+    <!-- DETAILS DRILL-DOWN MODAL -->
+    <div id="details-modal" class="modal-overlay" onclick="if(event.target===this) closeDetailsModal();">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div>
+            <h3 id="sheet-locality" style="font-size:1.1rem; font-weight:700;">Anand Vihar</h3>
+            <span id="sheet-aqi-val" style="font-size:0.8rem; color:#f87171; font-weight:600;">--</span>
+          </div>
+          <span id="sheet-grap-stage" class="badge" style="background:#ef4444; color:#fff; font-size:0.75rem;">GRAP-IV</span>
+        </div>
+
+        <h5 style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Detailed Pollutant Concentrations</h5>
+        <div class="bento-grid" style="margin-bottom:14px;">
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">PM2.5</label><div id="sheet-pm25" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">PM10</label><div id="sheet-pm10" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">NO2</label><div id="sheet-no2" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">SO2</label><div id="sheet-so2" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">CO</label><div id="sheet-co" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Ozone (O3)</label><div id="sheet-o3" style="font-weight:700;">--</div></div>
+        </div>
+
+        <h5 style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Atmospheric Physics Dynamics</h5>
+        <div class="bento-grid" style="margin-bottom:14px;">
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Temperature</label><div id="sheet-temp" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Humidity</label><div id="sheet-humidity" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Wind Vector</label><div id="sheet-wind" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">PBL Height</label><div id="sheet-pbl" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Ventilation Index</label><div id="sheet-vi" style="font-weight:700;">--</div></div>
+          <div class="bento-card" style="padding:10px;"><label style="font-size:0.7rem;color:var(--text-muted);">Stubble Smoke Inflow</label><div id="sheet-stubble-inflow" style="font-weight:700;">--</div></div>
+        </div>
+
+        <button class="btn-primary" onclick="closeDetailsModal();">Done</button>
+      </div>
+    </div>
+
+    <!-- SERVER CONFIGURATION SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('active');">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">⚙️ Server Configuration</h3>
+        <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:14px;">
+          Switch between local PC test server and remote cloud server.
+        </p>
+
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">BACKEND API BASE URL</label>
+        <input type="text" id="api-url-input" class="form-input" placeholder="e.g. http://localhost:8000 or https://your-server.onrender.com" />
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button class="btn-expand" style="margin:0;" onclick="document.getElementById('api-url-input').value='';">Reset (Local Origin)</button>
+          <button class="btn-expand" style="margin:0;" onclick="document.getElementById('api-url-input').value='http://localhost:8000';">Localhost:8000</button>
+        </div>
+
+        <button class="btn-primary" onclick="updateApiBaseUrl(document.getElementById('api-url-input').value);">
+          Save & Reconnect
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/citizen/app.js"></script>
+</body>
+</html>
+

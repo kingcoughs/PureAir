@@ -41,7 +41,6 @@ async def get_hotspot_causality_matrix():
     node_breakdowns = ig_results["node_breakdowns"]
     city_apportionment = ig_results["citywide_source_apportionment"]
 
-    # Rank nodes by attributed delta AQI
     sorted_nodes = sorted(
         node_breakdowns.values(),
         key=lambda x: x["total_attributed_delta_aqi"],
@@ -49,11 +48,10 @@ async def get_hotspot_causality_matrix():
     )
 
     hotspot_items = []
-    for rank, item in enumerate(sorted_nodes[:10], start=1):
+    for rank, item in enumerate(sorted_nodes[:15], start=1):
         hex_id = item["hex_id"]
         node = grid_manager.nodes[hex_id]
         
-        # Approximate current AQI for this node
         curr_aqi = int(round(node.baseline_pm25 * 1.6 + 45.0))
         if curr_aqi <= 200: grap = "Normal"
         elif curr_aqi <= 300: grap = "GRAP-I"
@@ -74,6 +72,8 @@ async def get_hotspot_causality_matrix():
             primary_pct=item["primary_blame_pct"],
             secondary_contributor=item["secondary_blame"],
             secondary_pct=item["secondary_blame_pct"],
+            tertiary_contributor=item.get("tertiary_blame"),
+            tertiary_pct=item.get("tertiary_blame_pct"),
             primary_recommended_action=action
         ))
 
@@ -91,9 +91,10 @@ async def get_hotspot_causality_matrix():
 async def run_counterfactual_policy_simulation(req: PolicySimulationRequest):
     """
     Counterfactual Policy Simulator (do-calculus engine):
-    Projects expected delta AQI reduction and time lag for hypothetical government actions.
+    Projects expected delta AQI reduction and time lag either citywide or specifically for a chosen hexagon.
     """
     return policy_simulator.simulate_interventions(
+        target_hex_id=req.target_hex_id,
         odd_even_active=req.odd_even_active,
         truck_diversion_active=req.truck_diversion_active,
         construction_halt_active=req.construction_halt_active,
@@ -125,7 +126,7 @@ async def dispatch_incident(req: DispatchActionRequest):
         "cluster_id": req.cluster_id,
         "success": True,
         "status": "Dispatched",
-        "message": f"Enforcement team deployed to cluster {req.cluster_id}. Geo-coordinates broadcasted to field officers."
+        "message": f"Enforcement squad deployed to cluster {req.cluster_id}. Field units dispatched with geo-coordinates."
     }
 
 @router.get("/weekly-audit", response_model=WeeklyAuditResponse)
@@ -141,4 +142,3 @@ async def trigger_model_retraining(req: RetrainRequest):
     Triggers closed-loop active learning fine-tuning of Model 1 using recent residual errors.
     """
     return auditor_batch_runner.trigger_closed_loop_retraining(epochs=req.epochs)
-

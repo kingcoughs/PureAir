@@ -1,5 +1,5 @@
 """
-Citizen API Endpoints: Hyper-Local AQI, 1-72h Trajectories, Clean Air Planner, and Incident Submissions
+Citizen API Endpoints: Hyper-Local AQI, 1-72h Trajectories, Multi-Day Clean Air Planner, and Incident Submissions
 """
 
 import time
@@ -38,30 +38,24 @@ async def get_live_aqi(
     Returns real-time hyper-local AQI, sub-pollutants, dominant driver,
     atmospheric weather, and health advisory for any Delhi coordinate.
     """
-    # 1. Resolve Hexagon Node
     if hex_id and hex_id in grid_manager.nodes:
         node = grid_manager.nodes[hex_id]
     elif lat is not None and lon is not None:
         node = grid_manager.find_nearest_node(lat, lon)
     else:
-        # Default to central Delhi (Connaught Place / Mandir Marg)
         node = grid_manager.find_nearest_node(28.6365, 77.2011)
 
     node_idx = grid_manager.hex_ids.index(node.hex_id)
 
-    # 2. Ingest weather, stubble, and sensor state
     weather = weather_engine.get_current_weather()
     stubble = stubble_engine.compute_stubble_inflow(weather["wind_direction"], weather["wind_speed"])
     
-    # 3. Build current node features & dynamic adjacency A(t)
     X_curr, A_curr = dataset_builder.build_current_node_features(weather)
-    X_seq = np.repeat(X_curr[np.newaxis, :, :], 12, axis=0) # [12, N, F]
+    X_seq = np.repeat(X_curr[np.newaxis, :, :], 12, axis=0)
 
-    # 4. Run Model 1 Inference with Uncertainty
     predictions = model1_lsp.predict_with_uncertainty(X_seq, A_curr, mc_samples=10)
     node_pred = predictions[node.hex_id]
 
-    # Extract pollutant values
     raw_feats = X_curr[node_idx]
     pollutants = {
         "pm25": round(float(raw_feats[0]), 1),
@@ -74,7 +68,6 @@ async def get_live_aqi(
 
     aqi_val, cat, grap, dom = calculate_cpcb_aqi(pollutants)
 
-    # Health Advisory Logic
     if aqi_val <= 100:
         advisory = "Air quality is good/acceptable. Ideal for all outdoor workouts."
     elif aqi_val <= 200:
@@ -139,44 +132,48 @@ async def get_forecast_trajectory(
 @router.post("/aqi/optimal-window", response_model=CleanAirWindowResponse)
 async def plan_clean_air_window_post(req: CleanAirWindowRequest):
     """
-    Calculates the minimum exposure clean air window over the next 24 hours (POST).
+    Calculates daytime waking clean air windows across 2-3 upcoming days (POST).
     """
     return clean_air_optimizer.find_optimal_window(
         lat=req.lat,
         lon=req.lon,
         duration_hours=req.duration_hours,
-        activity_type=req.activity_type
+        activity_type=req.activity_type,
+        days_ahead=req.days_ahead
     )
 
 @router.get("/aqi/optimal-window", response_model=CleanAirWindowResponse)
 async def plan_clean_air_window_get(
     lat: float = Query(28.6139),
     lon: float = Query(77.2090),
-    duration: int = Query(2, ge=1, le=6),
-    activity: str = Query("Jogging / Outdoor Workout")
+    duration: int = Query(2, ge=1, le=4),
+    activity: str = Query("Jogging / Outdoor Workout"),
+    days: int = Query(3, ge=1, le=3)
 ):
     """
-    Calculates the minimum exposure clean air window over the next 24 hours (GET).
+    Calculates daytime waking clean air windows across 2-3 upcoming days (GET).
     """
     return clean_air_optimizer.find_optimal_window(
         lat=lat,
         lon=lon,
         duration_hours=duration,
-        activity_type=activity
+        activity_type=activity,
+        days_ahead=days
     )
 
 @router.post("/incidents/report", response_model=IncidentReportResponse)
 async def submit_incident_report(report: IncidentReportRequest):
     """
-    Submits a geotagged citizen incident report and injects an immediate transient impulse Delta X into Model 1.
+    Submits a geotagged citizen incident report with photo evidence and injects impulse Delta X into Model 1.
     """
+    img = report.image_base64 or report.image_url
     new_report = incident_store.add_report(
         lat=report.lat,
         lon=report.lon,
         incident_type=report.incident_type,
         severity=report.severity,
         description=report.description,
-        image_url=report.image_url
+        image_url=img
     )
     
     current_impulse = new_report.get_current_impulse(time.time())
@@ -191,6 +188,7 @@ async def submit_incident_report(report: IncidentReportRequest):
         "severity": new_report.severity,
         "status": new_report.status,
         "timestamp": new_report.timestamp,
+        "image_url": new_report.image_url,
         "message": "Incident successfully verified and injected into Model 1 live prediction state.",
         "active_impulse": {k: round(v, 1) for k, v in current_impulse.items()}
     }
@@ -227,11 +225,10 @@ async def get_user_air_digest(
         "most_polluted_day": "Monday (Stagnant Winter Inversion)",
         "most_polluted_day_aqi": min(480, int(base_aqi * 1.45)),
         "top_neighborhood_driver": f"Vehicular Transit & Idling ({round(node.traffic_weight * 100)}% Local Weight)",
-        "driver_percentage": round(node.traffic_weight * 50.0 + 20.0, 1),
+        "driver_percentage": round(node.traffic_weight * 40.0 + 25.0, 1),
         "lifestyle_tips": [
-            "Best time for daily outdoor cardio in your sector is 2:00 PM - 4:00 PM.",
+            "Best time for daily outdoor cardio in your sector is 1:30 PM - 4:00 PM.",
             "Seal apartment windows facing main arterial during evening peak (7:00 PM - 10:00 PM).",
-            "Keep indoor plants (Areca Palm / Snake Plant) to reduce indoor VOC buildup."
+            "Keep indoor air-purifying plants (Areca Palm / Snake Plant) to reduce indoor VOC buildup."
         ]
     }
-

@@ -50,16 +50,17 @@ class ForecastTrajectoryResponse(BaseModel):
 class CleanAirWindowRequest(BaseModel):
     lat: float = Field(28.6139, description="Target Latitude")
     lon: float = Field(77.2090, description="Target Longitude")
-    duration_hours: int = Field(2, ge=1, le=6, description="Duration in hours (1-6)")
-    activity_type: str = Field("Jogging / Exercise", description="Activity name")
+    duration_hours: int = Field(2, ge=1, le=4, description="Duration in hours (1-4)")
+    activity_type: str = Field("Jogging / Outdoor Workout", description="Activity name")
+    days_ahead: int = Field(3, ge=1, le=3, description="Days range (1-3)")
 
 class CleanAirWindowResponse(BaseModel):
     requested_location: Dict[str, Any]
     planned_duration_hours: int
     activity_type: str
-    optimal_window: Dict[str, Any]
-    worst_exposure_window: Dict[str, Any]
-    hourly_24h_curve: List[Dict[str, Any]]
+    overall_best_window: Optional[Dict[str, Any]]
+    daily_recommendations: List[Dict[str, Any]]
+    hourly_curve: List[Dict[str, Any]]
 
 class IncidentReportRequest(BaseModel):
     lat: float = Field(..., description="Geotagged Latitude")
@@ -67,7 +68,8 @@ class IncidentReportRequest(BaseModel):
     incident_type: str = Field(..., description="garbage_burning | construction_dust | industrial_exhaust | road_dust")
     severity: int = Field(..., ge=1, le=5, description="Severity rating 1 to 5")
     description: str = Field(..., description="Incident description")
-    image_url: Optional[str] = Field(None, description="Photo evidence URL")
+    image_url: Optional[str] = Field(None, description="Photo evidence URL or base64 data URI")
+    image_base64: Optional[str] = Field(None, description="Base64 encoded photo")
 
 class IncidentReportResponse(BaseModel):
     report_id: str
@@ -80,6 +82,7 @@ class IncidentReportResponse(BaseModel):
     status: str
     timestamp: float
     message: str
+    image_url: Optional[str] = None
     active_impulse: Dict[str, float]
 
 class UserDigestResponse(BaseModel):
@@ -109,6 +112,8 @@ class HotspotCausalityItem(BaseModel):
     primary_pct: float
     secondary_contributor: str
     secondary_pct: float
+    tertiary_contributor: Optional[str] = None
+    tertiary_pct: Optional[float] = None
     primary_recommended_action: str
 
 class CausalityMatrixResponse(BaseModel):
@@ -118,6 +123,7 @@ class CausalityMatrixResponse(BaseModel):
     citywide_source_apportionment: Dict[str, float]
 
 class PolicySimulationRequest(BaseModel):
+    target_hex_id: Optional[str] = Field(None, description="Specific Hexagon ID or null/all for citywide")
     odd_even_active: bool = Field(False, description="Odd-Even vehicle rationing (50% traffic cut)")
     truck_diversion_active: bool = Field(False, description="Divert heavy freight to peripheral expressways (EPE/WPE)")
     construction_halt_active: bool = Field(False, description="Halt Tier-1 & Tier-2 construction works")
@@ -126,6 +132,8 @@ class PolicySimulationRequest(BaseModel):
 
 class PolicySimulationResponse(BaseModel):
     simulation_timestamp: float
+    target_hexagon_mode: str
+    target_node_detail: Optional[Dict[str, Any]] = None
     active_interventions: List[str]
     citywide_summary: Dict[str, Any]
     top_beneficiary_wards: List[Dict[str, Any]]
@@ -164,4 +172,3 @@ class RetrainResponse(BaseModel):
     rmse_improvement_pts: float
     final_r2: float
     status: str
-
