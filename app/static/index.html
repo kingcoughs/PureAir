@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delhi-NCR AI Air Quality Engine | Project Meswak</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  
+  <!-- Chart.js & Leaflet JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">💨</div>
+        <div class="brand-title">
+          <h1>Project Meswak | Delhi-NCR AI Airshed</h1>
+          <p>Physics-Informed Dynamic Graph AI • Model 1 (LSP) & Model 2 (CTAA)</p>
+        </div>
+      </div>
+
+      <!-- Navigation Mode Tabs -->
+      <nav class="nav-tabs">
+        <button class="tab-btn active" data-tab="tab-map">🌐 Airshed Map</button>
+        <button class="tab-btn" data-tab="tab-citizen">📱 Citizen Portal</button>
+        <button class="tab-btn" data-tab="tab-gov">🏛️ Gov Command Center</button>
+        <button class="tab-btn" data-tab="tab-audit">🧠 AI Model Lab</button>
+      </nav>
+
+      <!-- Live Meteorology & Inversion Bar -->
+      <div class="met-bar">
+        <div class="met-item">🌡️ <strong id="met-temp">--°C</strong></div>
+        <div class="met-item">💨 <strong id="met-wind">-- m/s</strong></div>
+        <div class="met-item">📏 PBL: <strong id="met-pbl">--m</strong></div>
+        <div class="met-item">🌪️ VI: <strong id="met-vi">-- m²/s</strong></div>
+        <span id="header-grap-badge" class="badge badge-grap4">GRAP-IV</span>
+        <span id="header-inversion-badge" class="badge badge-inversion">Inversion Trapping</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main>
+
+    <!-- TAB 1: INTERACTIVE AIRSHED MAP -->
+    <section id="tab-map" class="tab-content active">
+      <div class="grid-layout">
+        <!-- Leaflet Map Container -->
+        <div class="glass-panel" style="padding: 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 8px;">
+            <h3 style="font-size:1rem; font-weight:600;">Uber H3 Hexagon Grid (Res 7) & Dynamic Wind Transport Vectors</h3>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Click any hexagon to inspect local predictions</span>
+          </div>
+          <div id="airshed-map"></div>
+        </div>
+
+        <!-- Map Side Info Card -->
+        <div class="glass-panel" style="padding: 20px;">
+          <h3 style="font-size:1.05rem; font-weight:700; margin-bottom:12px;">Selected Node Quick-Look</h3>
+          
+          <div class="glass-card" style="margin-bottom:16px;">
+            <label style="font-size:0.75rem; color:var(--text-muted);">LOCATION</label>
+            <h4 id="map-quick-name" style="font-size:1.1rem; color:#fff;">Anand Vihar</h4>
+            <p id="map-quick-zone" style="font-size:0.8rem; color:var(--text-secondary);">East Delhi</p>
+            <div style="margin-top:10px; display:flex; align-items:baseline; gap:8px;">
+              <span id="map-quick-aqi" style="font-size:2rem; font-weight:800; color:#ef4444;">385</span>
+              <span style="font-size:0.8rem; color:var(--text-muted);">Current AQI</span>
+            </div>
+          </div>
+
+          <div class="glass-card" style="margin-bottom:16px;">
+            <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:8px; color:var(--accent-cyan);">Physics-Informed Dynamic Adjacency</h4>
+            <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">
+              Edges represent directed smoke flux modulated by the Pasquill-Gifford dispersion ($\sigma_y$), particulate settling ($\tau_{\text{decay}}$), ridge elevation barriers, and thermal inversion trapping gate ($\psi(\text{VI})$).
+            </p>
+          </div>
+
+          <button class="btn btn-success" onclick="document.querySelector('[data-tab=\'tab-citizen\']').click();">
+            🔍 Open Full Citizen Forecast &raquo;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CITIZEN PORTAL -->
+    <section id="tab-citizen" class="tab-content">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <!-- Left Column: Live AQI & 12-72h Trajectory -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div class="form-group" style="margin-bottom:18px;">
+            <label for="citizen-locality-select">SELECT YOUR DELHI-NCR LOCALITY</label>
+            <select id="citizen-locality-select" class="form-control"></select>
+          </div>
+
+          <!-- Hero AQI -->
+          <div class="aqi-hero">
+            <div id="citizen-aqi-circle" class="aqi-hero-circle bg-severe">
+              385
+              <span>AQI</span>
+            </div>
+            <div class="aqi-hero-meta">
+              <h3 id="citizen-locality-name">Anand Vihar</h3>
+              <p><span id="citizen-zone-name">East Delhi</span> • Category: <strong id="citizen-aqi-category" style="color:#ef4444;">Severe</strong></p>
+              <p style="font-size:0.75rem; margin-top:2px;">Primary Dominant: <strong id="citizen-dominant-pollutant" style="color:#fbbf24;">PM2.5</strong></p>
+            </div>
+          </div>
+
+          <!-- Attention-Based Primary Driver Card -->
+          <div class="driver-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 id="citizen-driver-title">🚜 Inbound Stubble Smoke + Inversion Trap</h4>
+              <span id="citizen-driver-confidence" class="badge" style="background:rgba(249,115,22,0.2); color:#fb923c;">42% Attention Activation</span>
+            </div>
+            <p id="citizen-driver-detail" style="margin-top:4px;">
+              Upper-level North-Westerly wind carrying transboundary biomass plumes from Punjab/Haryana trapped by low boundary layer.
+            </p>
+          </div>
+
+          <!-- Sub-Pollutants Grid -->
+          <div class="pollutant-grid">
+            <div class="pollutant-pill"><label>PM2.5</label><strong id="val-pm25">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">µg/m³</span></div>
+            <div class="pollutant-pill"><label>PM10</label><strong id="val-pm10">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">µg/m³</span></div>
+            <div class="pollutant-pill"><label>NO2</label><strong id="val-no2">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">µg/m³</span></div>
+            <div class="pollutant-pill"><label>SO2</label><strong id="val-so2">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">µg/m³</span></div>
+            <div class="pollutant-pill"><label>CO</label><strong id="val-co">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">mg/m³</span></div>
+            <div class="pollutant-pill"><label>O3</label><strong id="val-o3">--</strong> <span style="font-size:0.7rem;color:#9ca3af;">µg/m³</span></div>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+            <strong style="font-size:0.8rem; color:var(--text-secondary);">HEALTH ADVISORY:</strong>
+            <p id="citizen-health-advisory" style="font-size:0.85rem; color:#f3f4f6; margin-top:2px;">
+              Avoid morning cardio; run indoor HEPA air purifiers and wear an N95 mask outdoors.
+            </p>
+          </div>
+
+          <!-- Forecast Chart -->
+          <div style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="font-size:0.9rem; font-weight:600;">12 to 72-Hour Forecast Trajectory (with 90% Confidence Envelope)</h4>
+            </div>
+            <div class="chart-container">
+              <canvas id="forecastChartCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Clean Air Window Planner & Crowdsourced Incident Submission -->
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          
+          <!-- Clean Air Window Planner Widget -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3 style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); margin-bottom:12px;">🏃 Clean Air Window Planner</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:14px;">
+              Optimizes your outdoor schedule by evaluating $t^* = \arg\min \int_t^{t+\Delta t} \text{AQI}(\tau) d\tau$ over the next 24 hours.
+            </p>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+              <div class="form-group" style="margin:0;">
+                <label>PLANNED DURATION</label>
+                <select id="opt-duration-select" class="form-control">
+                  <option value="1">1 Hour</option>
+                  <option value="2" selected>2 Hours</option>
+                  <option value="3">3 Hours</option>
+                  <option value="4">4 Hours</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>ACTIVITY TYPE</label>
+                <select id="opt-activity-select" class="form-control">
+                  <option value="Jogging / Running">Jogging / Running</option>
+                  <option value="Kids Outdoor Play">Kids Outdoor Play</option>
+                  <option value="Daily Commute">Daily Commute</option>
+                  <option value="Senior Walk">Senior Walk</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-plan-clean-air" class="btn" style="margin-bottom:16px;">✨ Calculate Safest Outdoor Window</button>
+
+            <!-- Result Card -->
+            <div class="glass-card" style="border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.06);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; font-weight:700; color:#34d399; text-transform:uppercase;">RECOMMENDED SAFEST WINDOW</span>
+                <span id="opt-window-date" style="font-size:0.75rem; color:#9ca3af;">Today</span>
+              </div>
+              <h3 id="opt-window-time" style="font-size:1.4rem; font-weight:800; color:#fff; margin:4px 0;">02:00 PM - 04:00 PM</h3>
+              <p id="opt-window-aqi" style="font-size:0.85rem; color:#a7f3d0;">Avg AQI: 145 (Moderate)</p>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.78rem;">
+                <span id="opt-saved-pct" style="color:#10b981; font-weight:700;">-48% Particle Intake vs Peak Hours</span>
+              </div>
+              <p id="opt-advice" style="font-size:0.75rem; color:#9ca3af; margin-top:6px;">Solar heating expands planetary boundary layer, providing highest atmospheric ventilation.</p>
+            </div>
+
+            <!-- Diurnal Exposure Curve -->
+            <div style="margin-top:14px;">
+              <h5 style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:4px;">24-Hour Diurnal Particulate Curve</h5>
+              <div style="height:140px; position:relative;">
+                <canvas id="cleanAirChartCanvas"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Crowdsourced Incident Submission Widget -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3 style="font-size:1.05rem; font-weight:700; color:#f87171; margin-bottom:8px;">🚨 Crowdsourced Incident Reporter</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:14px;">
+              Report active local garbage fires, construction dust, or illegal chimney smoke. Injects an immediate transient impulse $\Delta X(t)$ into Model 1.
+            </p>
+
+            <form id="citizen-incident-form">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div class="form-group">
+                  <label>INCIDENT CATEGORY</label>
+                  <select id="incident-type-select" class="form-control">
+                    <option value="garbage_burning">🔥 Open Waste / Garbage Burning</option>
+                    <option value="construction_dust">🏗️ Uncovered Construction Dust</option>
+                    <option value="industrial_exhaust">🏭 Illegal Industrial Exhaust</option>
+                    <option value="road_dust">🚗 Heavy Road Dust Resuspension</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>SEVERITY (1 to 5)</label>
+                  <input type="range" id="incident-severity-slider" min="1" max="5" value="4" class="form-control" oninput="document.getElementById('sev-num').textContent=this.value;" />
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Severity Rating: <strong id="sev-num" style="color:#fff;">4</strong>/5</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>DESCRIPTION & LANDMARKS</label>
+                <input type="text" id="incident-desc-input" class="form-control" placeholder="e.g., Heavy plastic burning along drain road near intersection" required />
+              </div>
+
+              <button type="submit" class="btn btn-danger">
+                📢 Submit Geotagged Incident (Inject Impulse)
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: GOVERNMENT POLICY COMMAND CENTER -->
+    <section id="tab-gov" class="tab-content">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        
+        <!-- Causality Matrix & Source Apportionment -->
+        <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:20px;">
+          
+          <!-- Ward Causality Matrix Table -->
+          <div class="glass-panel" style="padding: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:1.1rem; font-weight:700;">Hotspot Causality Matrix (Top Vulnerability Zones)</h3>
+              <span class="badge badge-grap4">Active: GRAP-IV</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Ward / Cluster</th>
+                    <th>Current AQI</th>
+                    <th>Dominant Driver (Model 2 IG)</th>
+                    <th>Secondary Driver</th>
+                    <th>Targeted Enforcement Action</th>
+                  </tr>
+                </thead>
+                <tbody id="causality-matrix-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Integrated Gradients Citywide Apportionment -->
+          <div class="glass-panel" style="padding: 24px;">
+            <h3 style="font-size:1.05rem; font-weight:700; margin-bottom:8px;">Model 2: Integrated Gradients Source Apportionment</h3>
+            <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px;">
+              Game-theoretic baseline attribution $(X_{\text{today}} - X_{\text{clean}}) \times \int_0^1 \frac{\partial \text{AQI}}{\partial X} d\alpha$
+            </p>
+            <div style="height: 240px; position: relative;">
+              <canvas id="apportionmentChartCanvas"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Counterfactual Policy Simulator ($do$-calculus) -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+              <h3 style="font-size:1.15rem; font-weight:700; color:var(--accent-cyan);">🛠️ Counterfactual Policy Simulator ($do$-Calculus Engine)</h3>
+              <p style="font-size:0.8rem; color:var(--text-secondary);">
+                Evaluate regulatory interventions before enforcement: $\widehat{Y}_{\text{policy}} = \text{Model}_1(\mathbf{X} \text{ with } do(X_{\text{target}} = \kappa X), A(t))$
+              </p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+            <!-- Left: Policy Toggles -->
+            <div>
+              <div class="toggle-item">
+                <div>
+                  <strong style="font-size:0.88rem;">🚗 Odd-Even Vehicle Rationing</strong>
+                  <p style="font-size:0.75rem; color:var(--text-secondary);">Reduces private passenger traffic volume by 50% ($do(X_{\text{traffic}} = 0.5 \cdot X)$)</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="policy-odd-even" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div>
+                  <strong style="font-size:0.88rem;">🚛 Divert Non-Destined Heavy Freight to EPE/WPE</strong>
+                  <p style="font-size:0.75rem; color:var(--text-secondary);">Enforces truck bypass on Eastern & Western Peripheral Expressways (-35% diesel transit)</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="policy-truck-diversion" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div>
+                  <strong style="font-size:0.88rem;">🏗️ Halt Tier-1 & Tier-2 Construction Works</strong>
+                  <p style="font-size:0.75rem; color:var(--text-secondary);">Enforces 90% cessation on demolition and unpaved excavation ($do(X_{\text{const}} = 0.1 \cdot X)$)</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="policy-construction-halt" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-item">
+                <div>
+                  <strong style="font-size:0.88rem;">🏭 Industrial Boilers & PNG Curfew</strong>
+                  <p style="font-size:0.75rem; color:var(--text-secondary);">Mandates 50% capacity on non-conforming industrial zones in Mundka/Wazirpur</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="policy-industrial-curfew" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div style="margin-top:14px;">
+                <label style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:4px;">
+                  ANTI-SMOG GUNS / MIST CANNONS DEPLOYED: <strong id="smog-num" style="color:#fff;">50</strong> UNITS
+                </label>
+                <input type="range" id="policy-smog-guns" min="0" max="200" step="10" value="50" class="form-control" oninput="document.getElementById('smog-num').textContent=this.value;" />
+              </div>
+
+              <button id="btn-run-policy-sim" class="btn" style="margin-top:16px;">
+                ⚡ Run Counterfactual $do$-Calculus Simulation
+              </button>
+            </div>
+
+            <!-- Right: Simulation Output Impact -->
+            <div>
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:14px;">
+                <div class="glass-card" style="text-align:center;">
+                  <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">BASELINE (+6H)</span>
+                  <h4 id="policy-base-aqi" style="font-size:1.5rem; color:#ef4444; margin-top:2px;">382</h4>
+                </div>
+                <div class="glass-card" style="text-align:center;">
+                  <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">PROJECTED (+6H)</span>
+                  <h4 id="policy-proj-aqi" style="font-size:1.5rem; color:#10b981; margin-top:2px;">328</h4>
+                </div>
+                <div class="glass-card" style="text-align:center; border-color:rgba(16,185,129,0.3);">
+                  <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">EXPECTED DROP</span>
+                  <h4 id="policy-delta-pts" style="font-size:1.5rem; color:#34d399; margin-top:2px;">-54 pts</h4>
+                  <span id="policy-delta-pct" style="font-size:0.72rem; color:#10b981;">(14.1% Drop)</span>
+                </div>
+              </div>
+
+              <!-- Comparative Bar Chart -->
+              <div style="height: 180px; position:relative; margin-bottom:14px;">
+                <canvas id="policyComparisonCanvas"></canvas>
+              </div>
+
+              <div>
+                <h5 style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:6px;">Top Impact Beneficiary Wards:</h5>
+                <ul id="policy-beneficiaries-list" style="list-style:none; font-size:0.8rem;"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incident Triage Queue -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div>
+              <h3 style="font-size:1.1rem; font-weight:700;">🚨 DBSCAN Incident Verification & Municipal Dispatch Queue</h3>
+              <p style="font-size:0.78rem; color:var(--text-secondary);">
+                Spatiotemporally clustered reports ($\epsilon=500\text{m}, \tau=60\text{min}$) cross-referenced against IoT sensor spikes.
+              </p>
+            </div>
+            <button class="btn" style="width:auto; padding:6px 14px;" onclick="loadIncidentTriage();">🔄 Refresh Queue</button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Cluster ID</th>
+                  <th>Priority</th>
+                  <th>Location</th>
+                  <th>Category & Count</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="incident-triage-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: AI MODEL LAB & RETRAINING -->
+    <section id="tab-audit" class="tab-content">
+      <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap:20px;">
+        
+        <!-- Left: Model Performance & Retraining -->
+        <div class="glass-panel" style="padding: 24px;">
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--accent-purple); margin-bottom:8px;">Model 2: Weekly Auditor & Closed-Loop Retraining</h3>
+          <p id="audit-summary-text" style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:16px;">
+            Loading weekly audit summary...
+          </p>
+
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:18px;">
+            <div class="glass-card" style="text-align:center;">
+              <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">MODEL 1 RMSE</span>
+              <h4 id="metric-rmse" style="font-size:1.4rem; color:var(--accent-cyan); margin-top:2px;">14.8 pts</h4>
+            </div>
+            <div class="glass-card" style="text-align:center;">
+              <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">MODEL 1 MAE</span>
+              <h4 id="metric-mae" style="font-size:1.4rem; color:var(--accent-cyan); margin-top:2px;">11.2 pts</h4>
+            </div>
+            <div class="glass-card" style="text-align:center;">
+              <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">R² ACCURACY</span>
+              <h4 id="metric-r2" style="font-size:1.4rem; color:#10b981; margin-top:2px;">0.925</h4>
+            </div>
+          </div>
+
+          <div class="glass-card" style="margin-bottom:16px;">
+            <h4 style="font-size:0.88rem; color:#fff; margin-bottom:6px;">Closed-Loop Feedback Principle</h4>
+            <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">
+              Model 2 continuously tracks residuals between Model 1's 15-minute predictions and ground truth sensors. When systematic biases are detected, it triggers backpropagation over the spatiotemporal graph weights.
+            </p>
+          </div>
+
+          <button id="btn-trigger-retrain" class="btn btn-success" style="padding:12px;">
+            🔄 Execute Closed-Loop Retraining (Active Learning)
+          </button>
+        </div>
+
+        <!-- Right: REST API Diagnostic & JSON Inspector -->
+        <div class="glass-panel" style="padding: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="font-size:1.05rem; font-weight:700;">Live API JSON Inspector</h3>
+            <span style="font-size:0.72rem; color:var(--text-muted);">Contract Validation</span>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="testEndpoint('/api/aqi/live');">GET /api/aqi/live</button>
+            <button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="testEndpoint('/api/gov/causality-matrix');">GET /api/gov/causality-matrix</button>
+            <button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="testEndpoint('/api/gov/weekly-audit');">GET /api/gov/weekly-audit</button>
+          </div>
+
+          <pre id="json-output-viewer" class="json-viewer">Select an endpoint above or click on map to view typed JSON payload...</pre>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Custom App JavaScript -->
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  
+  <script>
+    async function testEndpoint(endpoint) {
+      try {
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        document.getElementById('json-output-viewer').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('json-output-viewer').textContent = "Error fetching endpoint: " + err;
+      }
+    }
+  </script>
+</body>
+</html>
+
