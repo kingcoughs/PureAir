@@ -26,7 +26,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 75)
-    print("   PROJECT MESWAK: DELHI-NCR AIR QUALITY AI TRAINING & AUDIT ENGINE   ")
+    print("   PUREAIR®: DELHI-NCR AIR QUALITY AI TRAINING & AUDIT ENGINE   ")
     print("=" * 75)
 
     print(f"\n[Phase 1] Training Model 1 (Live Spatiotemporal Predictor ST-GNN)...")

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Meswak Air | Delhi-NCR Citizen App</title>
+  <title>PureAir® | Delhi-NCR Citizen App</title>
   
   <!-- Leaflet Free Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -18,13 +18,20 @@
 
   <div class="mobile-wrapper">
 
-    <!-- Top App Bar -->
+    <!-- Top App Bar with Delhi Government Emblem -->
     <header class="top-bar">
-      <div class="location-pill" onclick="document.querySelector('[data-target=\'screen-map\']').click();">
-        <span>📍 <span id="current-locality-display">Anand Vihar</span></span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img class="delhi-govt-logo-img" src="/static/assets/delhi_govt_logo.png" style="height:34px; width:auto; object-fit:contain;" alt="Govt of NCT of Delhi" />
+        <div>
+          <div style="font-size:0.88rem; font-weight:800; color:var(--text-main); line-height:1.1;">PureAir®</div>
+          <div class="location-pill" style="padding:2px 6px; font-size:0.7rem; margin-top:2px;" onclick="document.querySelector('[data-target=\'screen-map\']').click();">
+            <span>📍 <span id="current-locality-display">Anand Vihar</span></span>
+          </div>
+        </div>
       </div>
 
       <div class="top-actions">
+        <a href="/" class="icon-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; font-size:1.1rem;" title="Back to Master Portal">🏠</a>
         <button class="icon-btn" onclick="toggleTheme();" title="Toggle Theme">🌓</button>
         <button class="icon-btn" onclick="document.getElementById('settings-modal').classList.add('active');" title="Server Settings">⚙️</button>
       </div>
@@ -33,9 +40,12 @@
     <!-- SCREEN 1: HOME / BENTO DASHBOARD -->
     <main id="screen-home" class="app-screen active">
       
-      <!-- Locality Quick Search -->
-      <div style="margin-bottom: 12px;">
-        <input type="text" id="locality-search-input" list="localities-datalist" class="form-input" placeholder="🔍 Search any Delhi-NCR Sector..." style="margin-bottom:0;" />
+      <!-- Locality Quick Selector & Search -->
+      <div style="margin-bottom: 12px; display:flex; flex-direction:column; gap:8px;">
+        <select id="citizen-city-select" class="form-input" style="margin-bottom:0; font-weight:600; font-size:0.85rem;">
+          <option value="">📍 Select any Delhi-NCR Sector / Ward...</option>
+        </select>
+        <input type="text" id="locality-search-input" list="localities-datalist" class="form-input" placeholder="🔍 Or type to search any Sector / Ward..." style="margin-bottom:0;" />
         <datalist id="localities-datalist"></datalist>
       </div>
 
@@ -128,7 +138,7 @@
       <!-- Wind Compass Overlay & Legend -->
       <div class="map-legend-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <strong style="font-size:0.8rem; color:var(--accent-cyan);">Atmospheric Dynamic Adjacency ($A(t)$)</strong>
+          <strong style="font-size:0.8rem; color:var(--accent-cyan);">💨 Live Wind & Smoke Flow Vectors</strong>
           <span id="map-wind-dir-badge" style="font-size:0.7rem; color:#94a3b8;">--</span>
         </div>
         
@@ -249,6 +259,31 @@
         <h4 style="font-size:0.9rem; color:#dc2626;">🟤 401 - 500+: Severe / Severe+ (GRAP-III & IV)</h4>
         <p style="font-size:0.75rem; color:var(--text-sub);">Affects healthy people and seriously impacts those with existing diseases. Stay indoors with purifiers.</p>
       </div>
+
+      <!-- AI Calculation Methodology -->
+      <h3 style="font-size:1.1rem; font-weight:700; color:var(--accent-cyan); margin-top:20px; margin-bottom:8px;">🔬 How Your AQI & Causes Are Calculated</h3>
+      
+      <div class="bento-card" style="margin-bottom:10px;">
+        <div style="font-size:0.7rem; font-weight:700; color:#38bdf8;">STAGE 1: SENSOR INGESTION</div>
+        <h4 style="font-size:0.85rem; color:#fff; margin:2px 0;">Ground Truth Telemetry</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Real-time pollutant concentrations (PM2.5, PM10, NO2, SO2, CO, Ozone) from 40+ CPCB sensor stations and live weather data.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:10px;">
+        <div style="font-size:0.7rem; font-weight:700; color:#a855f7;">STAGE 2: DYNAMIC AIRSHED MESH</div>
+        <h4 style="font-size:0.85rem; color:#fff; margin:2px 0;">Wind & Smoke Flow Tracking</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Connects 862 hexagon sectors across Delhi-NCR using 3D wind velocity, mountain ridge barriers, and atmospheric inversion mixing lids.</p>
+      </div>
+
+      <div class="bento-card" style="margin-bottom:12px;">
+        <div style="font-size:0.7rem; font-weight:700; color:#fb923c;">STAGE 3: INTEGRATED GRADIENTS</div>
+        <h4 style="font-size:0.85rem; color:#fff; margin:2px 0;">Game-Theoretic Source Attribution</h4>
+        <p style="font-size:0.75rem; color:var(--text-sub);">Calculates mathematical source attribution against a clean-air baseline (15 µg/m³) to assign exact percentage blame to traffic, industrial boilers, dust, stubble burning, and landfills.</p>
+      </div>
+
+      <a href="/sources" target="_blank" class="btn" style="background:rgba(255,255,255,0.06); border:1px solid var(--border); color:#38bdf8; text-decoration:none; text-align:center; font-size:0.82rem; margin-bottom:16px;">
+        📊 View Full Data Sources & Links Catalog &rarr;
+      </a>
     </main>
 
     <!-- Bottom Navigation Bar -->

@@ -11,7 +11,6 @@ from typing import Dict, List, Any, Optional
 from app.grid.h3_grid import grid_manager
 from app.grid.topography import haversine_km
 
-# Emission weights per pollutant for incident types: [PM2.5, PM10, NO2, SO2, CO, O3]
 INCIDENT_EMISSION_PROFILES = {
     "garbage_burning": {
         "weights": {"pm25": 65.0, "pm10": 45.0, "no2": 15.0, "so2": 10.0, "co": 3.2, "o3": 0.0},
@@ -59,13 +58,9 @@ class IncidentReport:
         self.confidence = confidence
         self.nearest_node = grid_manager.find_nearest_node(lat, lon)
         self.hex_id = self.nearest_node.hex_id
-        self.status = "Pending Verification" # Pending, Verified Hotspot, Dispatched, Resolved
+        self.status = "Action Required" # 'Action Required' | 'Dispatched (Enforcement En Route)' | 'Resolved'
 
     def get_current_impulse(self, current_time: float) -> Dict[str, float]:
-        """
-        Computes remaining transient emission impulse:
-        Delta X = Severity * w_type * exp(-(t - t0) / lambda) * I(confidence >= theta)
-        """
         if self.confidence < 0.5:
             return {k: 0.0 for k in ["pm25", "pm10", "no2", "so2", "co", "o3"]}
 
@@ -77,7 +72,7 @@ class IncidentReport:
         if decay < 0.01:
             return {k: 0.0 for k in ["pm25", "pm10", "no2", "so2", "co", "o3"]}
 
-        severity_multiplier = self.severity / 3.0 # normalize severity around 3
+        severity_multiplier = self.severity / 3.0
         impulse = {}
         for pollutant, base_val in profile["weights"].items():
             impulse[pollutant] = base_val * severity_multiplier * decay
@@ -105,25 +100,20 @@ class IncidentReport:
         }
 
 class IncidentStore:
-    """
-    In-Memory & Persisted Incident Management with DBSCAN Spatial Clustering
-    and Dynamic Impulse Aggregation for Model 1 Feature State.
-    """
     def __init__(self):
         self.reports: Dict[str, IncidentReport] = {}
         self._seed_sample_incidents()
 
     def _seed_sample_incidents(self):
-        """Seeds initial realistic active citizen incident reports."""
         now = time.time()
         sample_data = [
-            (28.6250, 77.3290, "garbage_burning", 4, "Smoldering garbage pile near Ghazipur boundary wall", now - 1800),
-            (28.6255, 77.3295, "garbage_burning", 5, "Dense plastic black smoke from landfill slope", now - 1200),
-            (28.6830, 77.0350, "industrial_exhaust", 4, "Heavy chemical exhaust venting from Mundka recycling unit", now - 3600),
-            (28.7330, 77.1210, "construction_dust", 3, "Uncovered cement sand unloading at Rohini Sec 16 construction site", now - 5400),
-            (28.6470, 77.3170, "road_dust", 4, "Extreme resuspended dust cloud along Anand Vihar bus terminal", now - 2400)
+            (28.6240, 77.3280, "garbage_burning", 5, "Smoldering plastic waste on Ghazipur landfill southern slope near border drain", now - 1200, "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400"),
+            (28.6250, 77.3290, "garbage_burning", 4, "Dense black smoke plume near Ghazipur Mandi bypass", now - 600, "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400"),
+            (28.6840, 77.0340, "industrial_exhaust", 4, "Illegal chemical plastic furnace exhaust venting in Mundka industrial lane 4", now - 2400, "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400"),
+            (28.7325, 77.1190, "construction_dust", 3, "Uncovered dry cement and sand transport at Rohini Sec 16 construction site", now - 3600, "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400"),
+            (28.6468, 77.3160, "road_dust", 4, "Resuspended road dust along Anand Vihar ISBT bus depot entry road", now - 1800, "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400")
         ]
-        for lat, lon, itype, sev, desc, ts in sample_data:
+        for lat, lon, itype, sev, desc, ts, img in sample_data:
             r_id = f"INC-{str(uuid.uuid4())[:8].upper()}"
             self.reports[r_id] = IncidentReport(
                 report_id=r_id,
@@ -133,6 +123,7 @@ class IncidentStore:
                 severity=sev,
                 description=desc,
                 timestamp=ts,
+                image_url=img,
                 confidence=0.92
             )
 
@@ -147,35 +138,24 @@ class IncidentStore:
             description=description,
             timestamp=time.time(),
             image_url=image_url,
-            confidence=0.88
+            confidence=0.90
         )
         self.reports[r_id] = report
         return report
 
     def get_node_incident_impulses(self, current_time: Optional[float] = None) -> Dict[str, Dict[str, float]]:
-        """
-        Aggregates transient impulse vector Delta X for every Hexagon Node:
-        Delta X_i = sum_k Delta X_{i,k}
-        """
         curr_t = current_time or time.time()
-        node_impulses: Dict[str, Dict[str, float]] = {h_id: {k: 0.0 for k in ["pm25", "pm10", "no2", "so2", "co", "o3"]} for h_id in grid_manager.hex_ids}
-        
+        node_impulses = {h_id: {k: 0.0 for k in ["pm25", "pm10", "no2", "so2", "co", "o3"]} for h_id in grid_manager.hex_ids}
         for r in self.reports.values():
             if r.hex_id in node_impulses:
                 impulse = r.get_current_impulse(curr_t)
                 for pollutant, val in impulse.items():
                     node_impulses[r.hex_id][pollutant] += val
-
         return node_impulses
 
-    def get_clustered_triage_queue(self, eps_km: float = 0.5, current_time: Optional[float] = None) -> List[Dict[str, Any]]:
-        """
-        Clusters active citizen reports using DBSCAN logic, cross-checks against nearest
-        ground sensor stations, and returns prioritized government dispatch items.
-        """
+    def get_clustered_triage_queue(self, eps_km: float = 0.6, current_time: Optional[float] = None) -> List[Dict[str, Any]]:
         curr_t = current_time or time.time()
-        # Filter reports active in last 6 hours
-        active = [r for r in self.reports.values() if (curr_t - r.timestamp) < 21600]
+        active = [r for r in self.reports.values() if (curr_t - r.timestamp) < 43200]
         if not active:
             return []
 
@@ -197,7 +177,6 @@ class IncidentStore:
                     cluster_members.append(r2)
                     visited.add(r2.report_id)
 
-            # Analyze cluster properties
             total_reports = len(cluster_members)
             avg_lat = sum(m.lat for m in cluster_members) / total_reports
             avg_lon = sum(m.lon for m in cluster_members) / total_reports
@@ -205,16 +184,17 @@ class IncidentStore:
             primary_type = cluster_members[0].incident_type
             nearest_node = grid_manager.find_nearest_node(avg_lat, avg_lon)
 
-            # Auto-escalation priority rule
+            is_dispatched = any("Dispatched" in m.status for m in cluster_members)
+            status = "Dispatched (Enforcement En Route)" if is_dispatched else "Action Required"
+
             if total_reports >= 2 or max_severity >= 4:
                 priority = "Priority 1 - High (Confirmed Hotspot)"
-                status = "Action Required"
-                for m in cluster_members:
-                    if m.status == "Pending Verification":
-                        m.status = "Verified Hotspot"
             else:
                 priority = "Priority 2 - Moderate"
-                status = cluster_members[0].status
+
+            # Pass all citizen descriptions & landmarks
+            descriptions = " | ".join(list(dict.fromkeys(m.description for m in cluster_members if m.description)))
+            photo_url = next((m.image_url for m in cluster_members if m.image_url), None)
 
             clusters.append({
                 "cluster_id": f"CLUST-{r1.report_id[-4:]}",
@@ -226,6 +206,8 @@ class IncidentStore:
                 "zone": nearest_node.zone,
                 "incident_type": primary_type,
                 "type_label": INCIDENT_EMISSION_PROFILES.get(primary_type, {}).get("label", primary_type),
+                "description": descriptions,
+                "image_url": photo_url,
                 "max_severity": max_severity,
                 "priority": priority,
                 "status": status,
@@ -233,12 +215,15 @@ class IncidentStore:
                 "reports": [m.to_dict(curr_t) for m in cluster_members]
             })
 
-        # Sort clusters by priority and report count
-        clusters.sort(key=lambda c: (1 if "Priority 1" in c["priority"] else 2, -c["report_count"]))
+        # Sort: Action Required first, then high priority
+        clusters.sort(key=lambda c: (
+            0 if "Action Required" in c["status"] else 1,
+            1 if "Priority 1" in c["priority"] else 2,
+            -c["report_count"]
+        ))
         return clusters
 
     def dispatch_cluster(self, cluster_id: str) -> bool:
-        """Marks all reports in a cluster as Dispatched to municipal enforcement squad."""
         triage = self.get_clustered_triage_queue()
         for c in triage:
             if c["cluster_id"] == cluster_id:
@@ -249,6 +234,5 @@ class IncidentStore:
                 return True
         return False
 
-# Global Incident Store Singleton
+# Global Singleton
 incident_store = IncidentStore()
-

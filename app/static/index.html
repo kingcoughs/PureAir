@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project Meswak | Delhi-NCR Air Quality AI Platform</title>
+  <title>PureAir® | Delhi-NCR Air Quality AI Platform</title>
   <style>
     :root {
       --bg: #060913;
@@ -27,11 +27,40 @@
       align-items: center;
       justify-content: center;
       padding: 24px;
+      position: relative;
+    }
+    .delhi-govt-emblem-corner {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 14px;
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .delhi-govt-emblem-corner img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+    }
+    .delhi-govt-emblem-corner .emblem-text {
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.25;
     }
     .launcher-container {
       max-width: 900px;
       width: 100%;
       text-align: center;
+      margin-top: 20px;
     }
     .badge {
       display: inline-flex;
@@ -47,7 +76,7 @@
       margin-bottom: 16px;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       font-weight: 800;
       letter-spacing: -0.5px;
       margin-bottom: 12px;
@@ -159,19 +188,29 @@
       color: #fff;
       text-decoration: underline;
     }
+    @media (max-width: 650px) {
+      .delhi-govt-emblem-corner {
+        position: static;
+        margin-bottom: 16px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="launcher-container">
-    <div class="badge">
-      <span>✨ Delhi-NCR Spatiotemporal Airshed AI</span>
+  <!-- Delhi Government Official Emblem in Corner -->
+  <div class="delhi-govt-emblem-corner">
+    <img src="/static/assets/delhi_govt_logo.png" alt="Government of NCT of Delhi" />
+    <div class="emblem-text">
+      Govt. of NCT of Delhi<br/>
+      <span style="font-size:0.65rem; color:#94a3b8; font-weight:500;">Environment Dept.</span>
     </div>
+  </div>
 
-    <h1>Project Meswak</h1>
+  <div class="launcher-container">
+    <h1>PureAir®</h1>
     <p class="sub">
-      Physics-informed Spatio-Temporal Graph AI Engine with Uber H3 Hexagonal Discretization,
-      Dynamic Wind Advection $A(t)$, Integrated Gradients Attribution, and $do$-Calculus Policy Simulation.
+      Live AI engine tracking how wind, weather, and local emissions interact across Delhi-NCR to forecast air quality and pinpoint exact pollution causes.
     </p>
 
     <div class="app-grid">
@@ -180,17 +219,17 @@
       <div class="app-card" style="border-top: 3px solid #38bdf8;">
         <div>
           <div class="card-icon">📱</div>
-          <h2 class="card-title">Citizen Mobile App</h2>
+          <h2 class="card-title">PureAir® Citizen App</h2>
           <p class="card-desc">
-            Responsive, touch-first Bento Grid app for hyper-local air quality, primary pollution causes, and activity planning.
+            A simple everyday app to check your local air quality, know what is causing the pollution, and plan outdoor activities safely.
           </p>
           <ul class="card-features">
-            <li>Large AQI Badge with Dominant Pollution Source</li>
-            <li>Expandable Pollutant & Weather Drill-down Sheet</li>
-            <li>12 to 72-Hour Forecast Trajectory with 90% CI</li>
-            <li>3-Day Daytime Clean Air Window Planner (6 AM - 9 PM)</li>
-            <li>Geotagged Incident Reporting with Photo Upload</li>
-            <li>Free Airshed Map with Locality Search & Wind Overlay</li>
+            <li>Live AQI score and main reason for pollution</li>
+            <li>Simple breakdown of dust, gases, and weather</li>
+            <li>1 to 3 day hourly air quality forecasts</li>
+            <li>Best times of day for outdoor walks and workouts</li>
+            <li>Report smoke and garbage burning with photos</li>
+            <li>Live city map showing wind direction and smoke spread</li>
           </ul>
         </div>
         <a href="/citizen" class="btn btn-citizen">Launch Citizen App &rarr;</a>
@@ -200,17 +239,17 @@
       <div class="app-card" style="border-top: 3px solid #a855f7;">
         <div>
           <div class="card-icon">🏛️</div>
-          <h2 class="card-title">Government Command Center</h2>
+          <h2 class="card-title">PureAir® Command Center</h2>
           <p class="card-desc">
-            Policy command dashboard for municipal authorities, hotspot enforcement, and counterfactual simulation.
+            A control dashboard for city officials to spot pollution hotspots, send inspection teams, and test anti-pollution rules.
           </p>
           <ul class="card-features">
-            <li>Calibrated Multi-Source Hotspot Causality Matrix</li>
-            <li>Hexagon-Specific & Citywide $do$-Calculus Simulator</li>
-            <li>DBSCAN Clustered Citizen Incident Triage with Photos</li>
-            <li>One-Click Enforcement Squad Dispatch</li>
-            <li>Integrated Gradients Weekly Source Apportionment</li>
-            <li>AI Model Lab with Closed-Loop Active Learning Retrain</li>
+            <li>Live ranking of the most polluted areas in the city</li>
+            <li>Test rules before enforcing (Odd-Even, truck bans, mist guns)</li>
+            <li>Citizen smoke and fire reports with photo proof</li>
+            <li>Quick one-click dispatch for field inspection teams</li>
+            <li>Clear breakdown of pollution sources (traffic, factories, dust, fires)</li>
+            <li>Real-time AI accuracy tracker and health monitor</li>
           </ul>
         </div>
         <a href="/gov" class="btn btn-gov">Launch Government Command &rarr;</a>
@@ -218,12 +257,14 @@
 
     </div>
 
-    <div class="footer-links">
+    <div class="footer-links" style="flex-wrap:wrap;">
+      <a href="/sources" style="color:var(--cyan); font-weight:700;">📊 Data Sources & Parameters Catalog</a>
+      <span>•</span>
       <a href="/docs" target="_blank">📖 Swagger API Docs</a>
       <span>•</span>
       <a href="/redoc" target="_blank">📑 ReDoc Reference</a>
       <span>•</span>
-      <a href="/api/info" target="_blank">🧠 Model Architecture Specs</a>
+      <a href="/api/info" target="_blank">🧠 Architecture Specs</a>
       <span>•</span>
       <a href="/health" target="_blank">🟢 Health Status</a>
     </div>

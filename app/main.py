@@ -92,6 +92,14 @@ async def serve_gov_app():
         return FileResponse(str(gov_index))
     return JSONResponse({"error": "Government App not found"}, status_code=404)
 
+@app.get("/sources", tags=["Dashboard"])
+async def serve_data_sources():
+    """Serves the Comprehensive Data Sources & Telemetry Catalog Page."""
+    sources_path = STATIC_DIR / "sources.html"
+    if sources_path.exists():
+        return FileResponse(str(sources_path))
+    return JSONResponse({"error": "Data Sources page not found"}, status_code=404)
+
 @app.get("/", tags=["Dashboard"])
 async def serve_portal():
     """Serves the Unified App Launcher & Master Portal."""

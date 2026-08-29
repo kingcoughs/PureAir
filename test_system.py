@@ -227,7 +227,7 @@ def test_9_routes_and_apps():
 
 if __name__ == "__main__":
     print("=" * 75)
-    print("   RUNNING FULL SYSTEM TEST SUITE: PROJECT MESWAK (DELHI-NCR AQI AI)   ")
+    print("   RUNNING FULL SYSTEM TEST SUITE: PUREAIR® (DELHI-NCR AQI AI)   ")
     print("=" * 75)
     test_1_grid_and_topography()
     test_2_dynamic_physics_adjacency()

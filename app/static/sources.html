@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Sources & Parameter Catalog | PureAir®</title>
+  <style>
+    :root {
+      --bg: #060913;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --orange: #f97316;
+      --purple: #8b5cf6;
+      --text: #f8fafc;
+      --text-sub: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #060913 60%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 36px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 960px;
+      width: 100%;
+    }
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .delhi-govt-emblem-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+    .delhi-govt-emblem-badge img {
+      height: 36px;
+      width: auto;
+      object-fit: contain;
+    }
+    .delhi-govt-emblem-badge .emblem-text {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.2;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .header-box {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header-box h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-box p {
+      font-size: 1rem;
+      color: var(--text-sub);
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .source-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .source-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .source-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .source-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .source-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .source-icon {
+      font-size: 1.5rem;
+    }
+    .source-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .source-desc {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .param-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .param-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .link-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .link-row a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .link-row a:hover {
+      text-decoration: underline;
+      color: #93c5fd;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <a href="/" class="back-btn">🏠 Master Portal</a>
+      
+      <!-- Delhi Govt Emblem Badge -->
+      <div class="delhi-govt-emblem-badge">
+        <img src="/static/assets/delhi_govt_logo.png" alt="Govt of NCT of Delhi" />
+        <div class="emblem-text">
+          Govt. of NCT of Delhi<br/>
+          <span style="font-size:0.62rem; color:#94a3b8; font-weight:500;">Environment Dept.</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <a href="/citizen" class="back-btn" style="color:#38bdf8;">📱 Citizen App</a>
+        <a href="/gov" class="back-btn" style="color:#a855f7;">🏛️ Government Command</a>
+      </div>
+    </div>
+
+    <!-- Header Box -->
+    <div class="header-box">
+      <h1>PureAir® Data Sources & Parameters</h1>
+      <p>
+        PureAir® ingests real-time ground truth telemetry, satellite observations, atmospheric physics, and spatial GIS models from official open data providers.
+      </p>
+    </div>
+
+    <!-- Source Cards -->
+    <div class="source-grid">
+
+      <!-- 1. CPCB & OpenAQ -->
+      <div class="source-card" style="border-left: 4px solid #38bdf8;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">📡</span>
+            <div>
+              <h3 class="source-title">Ground Sensor Air Quality Telemetry</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">Central Pollution Control Board (CPCB) / DPCC / OpenAQ API</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">Hourly Ground Truth</span>
+        </div>
+        <p class="source-desc">
+          Continuous Ambient Air Quality Monitoring Station (CAAQMS) sensor measurements across 40+ official monitoring stations in Delhi-NCR (Anand Vihar, RK Puram, Punjabi Bagh, ITO, Mandir Marg, Mundka, Bawana, etc.).
+        </p>
+        <div class="param-list">
+          <span class="param-pill">PM2.5 (µg/m³)</span>
+          <span class="param-pill">PM10 (µg/m³)</span>
+          <span class="param-pill">NO2 (µg/m³)</span>
+          <span class="param-pill">SO2 (µg/m³)</span>
+          <span class="param-pill">CO (mg/m³)</span>
+          <span class="param-pill">Ozone O3 (µg/m³)</span>
+          <span class="param-pill">CPCB NAQI Index</span>
+        </div>
+        <div class="link-row">
+          <a href="https://openaq.org/" target="_blank">🌐 OpenAQ Global Data Platform &rarr;</a>
+          <a href="https://api.openaq.org/v2/measurements" target="_blank">📡 OpenAQ REST API &rarr;</a>
+          <a href="https://app.cpcbccr.com/AQI_India/" target="_blank">🏛️ CPCB Official Air Quality Portal &rarr;</a>
+          <a href="https://data.gov.in/resource/real-time-air-quality-index" target="_blank">🇮🇳 Open Government Data (data.gov.in) &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 2. Open-Meteo & ECMWF -->
+      <div class="source-card" style="border-left: 4px solid #34d399;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">🌤️</span>
+            <div>
+              <h3 class="source-title">Live Meteorology & Boundary Layer Dynamics</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">Open-Meteo Weather API / ECMWF ERA5 Atmospheric Reanalysis</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(52, 211, 153, 0.15); color:#34d399;">Live & 7-Day Forecast</span>
+        </div>
+        <p class="source-desc">
+          High-resolution atmospheric state variables and planetary boundary layer heights used to evaluate convective dispersion and atmospheric thermal inversion mixing lids.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Temperature (°C)</span>
+          <span class="param-pill">Relative Humidity (%)</span>
+          <span class="param-pill">10m Wind Speed (m/s)</span>
+          <span class="param-pill">10m Wind Direction (0-360°)</span>
+          <span class="param-pill">PBL Height (m)</span>
+          <span class="param-pill">Ventilation Index (m²/s)</span>
+          <span class="param-pill">Precipitation (mm)</span>
+          <span class="param-pill">Surface Pressure (hPa)</span>
+        </div>
+        <div class="link-row">
+          <a href="https://open-meteo.com/" target="_blank">🌐 Open-Meteo Open Weather API &rarr;</a>
+          <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels" target="_blank">🇪🇺 Copernicus ECMWF ERA5 Dataset &rarr;</a>
+          <a href="http://safar.tropmet.res.in/" target="_blank">🇮🇳 Ministry of Earth Sciences SAFAR &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 3. NASA FIRMS Stubble Fires -->
+      <div class="source-card" style="border-left: 4px solid #f87171;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">🛰️</span>
+            <div>
+              <h3 class="source-title">Satellite Active Fires & Crop Residue Burning</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">NASA FIRMS (Fire Information for Resource Management System) / ISRO Bhuvan</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(248, 113, 113, 0.15); color:#f87171;">Near Real-Time Satellites</span>
+        </div>
+        <p class="source-desc">
+          Thermal anomaly coordinates, Fire Radiative Power (FRP), and detection confidence from VIIRS (375m) and MODIS (1km) satellites over Punjab, Haryana, and Western UP coupled to agricultural harvest calendars.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Fire Lat/Lon Coordinates</span>
+          <span class="param-pill">Fire Radiative Power (MW)</span>
+          <span class="param-pill">Satellite Overpass (VIIRS / MODIS)</span>
+          <span class="param-pill">Confidence Score (%)</span>
+          <span class="param-pill">Transboundary Inflow (µg/m³)</span>
+        </div>
+        <div class="link-row">
+          <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank">🌐 NASA FIRMS Fire Portal &rarr;</a>
+          <a href="https://firms.modaps.eosdis.nasa.gov/api/" target="_blank">🚀 NASA Earthdata FIRMS API &rarr;</a>
+          <a href="https://bhuvan-app1.nrsc.gov.in/stubble/" target="_blank">🇮🇳 ISRO Bhuvan Stubble Burning Dashboard &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 4. Topography & Elevation -->
+      <div class="source-card" style="border-left: 4px solid #fbbf24;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">⛰️</span>
+            <div>
+              <h3 class="source-title">Topography & Digital Elevation Models (DEM)</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">NASA SRTM 30m Global DEM / OpenTopography</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(251, 191, 36, 0.15); color:#fbbf24;">30m Spatial Grid</span>
+        </div>
+        <p class="source-desc">
+          Digital elevation data capturing the Southern Aravalli Ridge elevation barrier (up to 310m) and Yamuna River low-lying plains (205m) to calculate physical smoke plume blocking decay factors.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Altitude Elevation (meters ASL)</span>
+          <span class="param-pill">Terrain Slope & Ridge Profiles</span>
+          <span class="param-pill">Topographic Barrier Decay</span>
+        </div>
+        <div class="link-row">
+          <a href="https://opentopography.org/" target="_blank">🌐 OpenTopography Portal &rarr;</a>
+          <a href="https://earthexplorer.usgs.gov/" target="_blank">🌍 USGS EarthExplorer NASA SRTM &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 5. Uber H3 Hexagonal Grid -->
+      <div class="source-card" style="border-left: 4px solid #a855f7;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">⬡</span>
+            <div>
+              <h3 class="source-title">Spatial Hexagonal Discretization Mesh</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">Uber H3 Discrete Global Grid System (DGGS)</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(168, 85, 247, 0.15); color:#a855f7;">Resolution 7 (~5.16 km²)</span>
+        </div>
+        <p class="source-desc">
+          Gapless, equal-area hexagonal tessellation partitioning the 1,484 km² Delhi NCT and surrounding NCR districts into 862 discrete calculation nodes.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">H3 Hexagon 64-bit Index</span>
+          <span class="param-pill">Polygon Boundary Vertices</span>
+          <span class="param-pill">Centroid Coordinates</span>
+        </div>
+        <div class="link-row">
+          <a href="https://h3geo.org/" target="_blank">🌐 Uber H3 Documentation &rarr;</a>
+          <a href="https://github.com/uber/h3-py" target="_blank">💻 h3-py Python Library &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 6. OpenStreetMap Road Network -->
+      <div class="source-card" style="border-left: 4px solid #ec4899;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">🛣️</span>
+            <div>
+              <h3 class="source-title">Road Networks, Freight Corridors & Mobility</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">OpenStreetMap (OSM) via Overpass API / TomTom Traffic</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(236, 72, 153, 0.15); color:#ec4899;">Vector Highways</span>
+        </div>
+        <p class="source-desc">
+          Vector geometry of arterial expressways (EPE, WPE, Ring Road, NH-44), ISBT freight terminals, and diurnal traffic density weights.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Highway Classification</span>
+          <span class="param-pill">Arterial Freight Corridors</span>
+          <span class="param-pill">Diurnal Traffic Load Multipliers</span>
+        </div>
+        <div class="link-row">
+          <a href="https://overpass-turbo.eu/" target="_blank">🌐 OpenStreetMap Overpass Turbo API &rarr;</a>
+          <a href="https://www.tomtom.com/traffic-index/delhi-traffic/" target="_blank">🚦 TomTom Delhi Congestion Index &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 7. Gridded Emissions Inventories -->
+      <div class="source-card" style="border-left: 4px solid #f97316;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">🏭</span>
+            <div>
+              <h3 class="source-title">Industrial & Landfill Emissions Inventories</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">UrbanEmissions.info (SIM-air) / DPCC Industrial Registry</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(249, 115, 22, 0.15); color:#f97316;">1km x 1km Gridded Inventory</span>
+        </div>
+        <p class="source-desc">
+          Atmospheric emissions inventory for industrial clusters (Mundka, Bawana, Narela, Wazirpur, Mayapuri, Okhla) and municipal solid waste landfills (Ghazipur, Bhalswa, Okhla).
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Industrial Boiler SO2 & PM Flux</span>
+          <span class="param-pill">Methane Smoldering Pockets</span>
+          <span class="param-pill">Construction Dust Weights</span>
+        </div>
+        <div class="link-row">
+          <a href="https://urbanemissions.info/delhi-air-quality/" target="_blank">🌐 UrbanEmissions Delhi Air Quality Inventory &rarr;</a>
+          <a href="https://www.dpcc.delhigovt.nic.in/" target="_blank">🏛️ DPCC Industrial Registry &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 8. Citizen Crowdsourced Telemetry -->
+      <div class="source-card" style="border-left: 4px solid #6366f1;">
+        <div class="source-header">
+          <div class="source-title-row">
+            <span class="source-icon">📸</span>
+            <div>
+              <h3 class="source-title">Citizen Crowdsourced Incident Telemetry</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">PureAir® Telemetry Store / Delhi Govt Green Delhi App</span>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(99, 102, 241, 0.15); color:#6366f1;">Real-Time Citizen Reports</span>
+        </div>
+        <p class="source-desc">
+          Geotagged citizen reports of open garbage burning, unpaved construction dust, and illegal industrial smoke exhausts with photo proof, clustered using DBSCAN spatial algorithms.
+        </p>
+        <div class="param-list">
+          <span class="param-pill">Geotagged GPS Coordinates</span>
+          <span class="param-pill">Incident Categorization</span>
+          <span class="param-pill">Severity Rating (1-5)</span>
+          <span class="param-pill">Citizen Photo Proof</span>
+        </div>
+        <div class="link-row">
+          <a href="/citizen" target="_blank">📱 Citizen Report Interface &rarr;</a>
+          <a href="https://greendelhiapp.delhi.gov.in/" target="_blank">🏛️ Delhi Govt Green Delhi Portal &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center; padding:24px 0; border-top:1px solid var(--border); font-size:0.85rem; color:var(--text-sub);">
+      PureAir® • Govt. of NCT of Delhi • Open Environmental Intelligence Platform
+    </div>
+
+  </div>
+
+</body>
+</html>

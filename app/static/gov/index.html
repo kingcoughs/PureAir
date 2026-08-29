@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meswak Command | Delhi-NCR Government Airshed Policy Center</title>
+  <title>PureAir® Command Center | Delhi-NCR Government Policy Center</title>
 
   <!-- Leaflet Free Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -20,10 +20,17 @@
 
     <!-- Left Navigation Sidebar -->
     <aside class="gov-sidebar">
-      <div class="gov-brand">
-        <div class="gov-brand-icon">🏛️</div>
+      
+      <!-- Back to Master Portal Button -->
+      <a href="/" class="gov-btn" style="text-decoration:none; background:rgba(255,255,255,0.06); color:#fff; justify-content:center; margin-bottom:16px; border:1px solid var(--border-gov); font-size:0.8rem; padding:8px 12px;" title="Return to Unified Master Portal">
+        🏠 Unified Portal
+      </a>
+
+      <!-- Brand with Official Delhi Government Emblem -->
+      <div class="gov-brand" style="margin-bottom:22px;">
+        <img class="delhi-govt-logo-img" src="/static/assets/delhi_govt_logo.png" style="height:38px; width:auto; object-fit:contain;" alt="Government of NCT of Delhi" />
         <div>
-          <h2 style="font-size:1.05rem; font-weight:800; color:#fff;">Meswak Gov</h2>
+          <h2 style="font-size:1.05rem; font-weight:800; color:var(--text-main);">PureAir®</h2>
           <span style="font-size:0.7rem; color:var(--accent-cyan); font-weight:600; text-transform:uppercase;">Command Center</span>
         </div>
       </div>
@@ -60,11 +67,16 @@
     <!-- Main Content Area -->
     <div class="gov-main">
 
-      <!-- Top Header Bar -->
+      <!-- Top Header Bar with Corner Delhi Govt Emblem -->
       <header class="gov-header">
-        <div>
-          <h1 style="font-size:1.15rem; font-weight:800;">Delhi-NCR Spatiotemporal Airshed Command</h1>
-          <span style="font-size:0.75rem; color:var(--text-sub);">Physics-Informed Dual-Model AI Intelligence System</span>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <a href="/" class="gov-btn" style="text-decoration:none; background:rgba(255,255,255,0.06); padding:6px 12px; font-size:0.78rem; border:1px solid var(--border-gov); color:#f8fafc;" title="Back to Master Portal">
+            🏠 Back to Portal
+          </a>
+          <div>
+            <h1 style="font-size:1.15rem; font-weight:800; color:var(--text-main);">PureAir® Command Center</h1>
+            <span style="font-size:0.75rem; color:var(--text-sub);">Govt. of NCT of Delhi • Policy & Air Quality Intelligence</span>
+          </div>
         </div>
 
         <div class="gov-header-met">
@@ -73,17 +85,39 @@
           <div>☁️ PBL: <span id="gov-header-pbl" style="font-weight:700;">--</span></div>
           <div>🌀 VI: <span id="gov-header-vi" style="font-weight:700;">--</span></div>
           <span id="gov-grap-badge" class="badge" style="background:#ef4444; color:#fff; font-size:0.78rem; padding:4px 10px;">GRAP-IV</span>
+
+          <!-- Official Delhi Govt Emblem in Header Corner -->
+          <div style="display:flex; align-items:center; gap:8px; padding:4px 10px; background:var(--bg-card-subtle); border:1px solid var(--border-gov); border-radius:8px;">
+            <img class="delhi-govt-logo-img" src="/static/assets/delhi_govt_logo.png" style="height:32px; width:auto; object-fit:contain;" alt="Govt of NCT of Delhi" />
+            <div style="text-align:left; font-size:0.68rem; font-weight:700; color:var(--text-main); line-height:1.2;">
+              Govt. of Delhi<br/>
+              <span style="font-size:0.6rem; color:var(--text-sub); font-weight:500;">Environment Dept.</span>
+            </div>
+          </div>
         </div>
       </header>
 
       <!-- SCREEN 1: CAUSALITY MATRIX -->
       <section id="gov-screen-matrix" class="gov-screen active">
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-bottom:20px;">
+        
+        <!-- Sector Quick Selector Dropdown -->
+        <div class="gov-panel" style="padding:14px 20px; display:flex; align-items:center; gap:16px;">
+          <strong style="font-size:0.85rem; color:var(--accent-cyan); white-space:nowrap;">🔍 Quick Inspect Sector:</strong>
+          <select id="gov-city-select" class="gov-select" style="flex:1;">
+            <option value="">Select any Delhi-NCR Sector / Ward for Single-City Intelligence View...</option>
+          </select>
+        </div>
+
+        <!-- TOP ROW: Hotspot Matrix Table (2fr) + Citywide Source Apportionment Donut (1fr) -->
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
           
           <div class="gov-panel">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h3 style="font-size:1.05rem; font-weight:700;">Hotspot Causality Matrix & Regulatory Actions</h3>
-              <span class="badge" style="background:rgba(59,130,246,0.2); color:#60a5fa;">Calibrated Multi-Source Attribution</span>
+              <div>
+                <h3 style="font-size:1.05rem; font-weight:700;">Hotspot Causality Matrix & Regulatory Actions</h3>
+                <span style="font-size:0.75rem; color:var(--text-sub);">Ranked strictly in descending order of current AQI (Highest AQI first). Click any area name to inspect below.</span>
+              </div>
+              <span class="badge" style="background:rgba(59,130,246,0.2); color:#60a5fa;">Calibrated Node Attribution</span>
             </div>
             
             <div style="overflow-x:auto;">
@@ -91,11 +125,11 @@
                 <thead>
                   <tr>
                     <th>Rank</th>
-                    <th>Locality / Ward</th>
+                    <th>Locality / Ward (Click to Inspect)</th>
                     <th>Current AQI</th>
                     <th>Primary Driver</th>
                     <th>Secondary Driver</th>
-                    <th>Recommended GRAP Enforcement Action</th>
+                    <th>Recommended GRAP Action</th>
                   </tr>
                 </thead>
                 <tbody id="causality-matrix-body"></tbody>
@@ -107,20 +141,146 @@
           <div class="gov-panel">
             <h3 style="font-size:1.05rem; font-weight:700; margin-bottom:12px;">Citywide Source Apportionment</h3>
             <p style="font-size:0.75rem; color:var(--text-sub); margin-bottom:12px;">
-              Model 2 Integrated Gradients ($-\Delta \text{AQI}$) Path-Integral Attribution
+              Model 2 Integrated Gradients Path-Integral Attribution
             </p>
-            <div style="position:relative; height:240px; width:100%;">
+            <div style="position:relative; height:260px; width:100%;">
               <canvas id="govApportionmentDonut"></canvas>
             </div>
           </div>
 
         </div>
+
+        <!-- SINGLE-SECTOR INTELLIGENCE PANEL (PLACED DIRECTLY BELOW MATRIX & DONUT) -->
+        <div id="sector-intel-panel" class="gov-panel" style="display:flex; flex-direction:column; gap:18px; margin-top:4px;">
+          
+          <!-- Top Title Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-gov); padding-bottom:14px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">📍</span>
+                <h2 id="modal-sector-title" style="font-size:1.35rem; font-weight:800; color:#fff;">--</h2>
+              </div>
+              <span id="modal-sector-zone" style="font-size:0.78rem; color:var(--text-sub); display:block; margin-top:2px;">--</span>
+            </div>
+            <span class="badge" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8; font-size:0.8rem; padding:6px 12px;">
+              🎯 Active Selected Sector Intelligence
+            </span>
+          </div>
+
+          <!-- Hero Bento Box -->
+          <div class="modal-bento-hero">
+            <div class="modal-aqi-row">
+              <div>
+                <span id="modal-locality-badge" style="font-size:0.75rem; color:var(--text-sub); text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">--</span>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;">
+                  <span id="modal-aqi-val" class="modal-aqi-huge" style="color:#ef4444;">--</span>
+                  <span style="font-size:1rem; color:var(--text-muted); font-weight:700;">AQI</span>
+                </div>
+              </div>
+              <span id="modal-cat-badge" class="badge" style="background:#ef4444; color:#fff; font-size:0.85rem; padding:6px 14px; font-weight:700; text-transform:uppercase;">--</span>
+            </div>
+
+            <div style="font-size:0.85rem; color:var(--text-sub);">
+              Dominant Pollutant: <strong id="modal-dom-pollutant" style="color:#fbbf24;">--</strong>
+            </div>
+
+            <!-- Primary Source Attribution Banner -->
+            <div class="modal-source-banner">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.1rem;">🚨</span>
+                <div>
+                  <strong>Primary Source:</strong> <span id="modal-primary-source" style="color:#fb923c; font-weight:700;">--</span>
+                  <div id="modal-primary-detail" style="font-size:0.75rem; color:var(--text-sub); margin-top:2px;">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Mini Bento Metric Cards -->
+          <div class="modal-metric-grid">
+            <div class="modal-metric-card">
+              <label>PM2.5 LEVEL</label>
+              <div id="modal-m-pm25" class="val" style="color:#f87171;">-- µg/m³</div>
+              <div class="sub">CPCB Sensor Ground Truth</div>
+            </div>
+
+            <div class="modal-metric-card">
+              <label>ATMOSPHERE</label>
+              <div id="modal-m-temp" class="val">-- °C</div>
+              <div id="modal-m-inversion" class="sub" style="color:#fbbf24;">--</div>
+            </div>
+
+            <div class="modal-metric-card">
+              <label>WIND TRANSPORT</label>
+              <div id="modal-m-wind" class="val">-- m/s</div>
+              <div id="modal-m-wind-dir" class="sub">-- Vector</div>
+            </div>
+
+            <div class="modal-metric-card">
+              <label>PBL HEIGHT</label>
+              <div id="modal-m-pbl" class="val" style="color:#38bdf8;">-- m</div>
+              <div class="sub">Inversion Mixing Lid</div>
+            </div>
+          </div>
+
+          <!-- 12 to 72-Hour Forecast Trajectory Chart -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-gov); border-radius:14px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4 style="font-size:0.92rem; font-weight:700; color:#fff;">12 to 72-Hour Forecast Trajectory</h4>
+              <span style="font-size:0.72rem; color:var(--accent-cyan); font-weight:600;">90% Confidence Bounds</span>
+            </div>
+            <div style="position:relative; height:200px; width:100%;">
+              <canvas id="modalSectorForecastCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- 7-Day Cause Trends Line Chart -->
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-gov); border-radius:14px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4 style="font-size:0.92rem; font-weight:700; color:var(--accent-cyan);">📈 7-Day Historical Cause Trends (%)</h4>
+              <span style="font-size:0.72rem; color:var(--text-sub);">Model 2 Path-Integral Attribution Share</span>
+            </div>
+            <div style="position:relative; height:240px; width:100%;">
+              <canvas id="modalSectorTrendCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Current Pollution Donut + Direct Simulator Button -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-gov); border-radius:14px; padding:16px;">
+              <h4 style="font-size:0.88rem; font-weight:700; margin-bottom:8px;">Current Pollution Breakdown</h4>
+              <div style="position:relative; height:180px;">
+                <canvas id="modalSectorDonutCanvas"></canvas>
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-gov); border-radius:14px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <h4 style="font-size:0.88rem; font-weight:700; margin-bottom:6px;">Policy Intervention Actions</h4>
+                <p style="font-size:0.78rem; color:var(--text-sub); line-height:1.4;">
+                  Run simulated policy interventions specifically on this sector to evaluate projected AQI reductions and physical response time lag.
+                </p>
+              </div>
+              <button id="btn-modal-simulate-sector" class="gov-btn" style="width:100%; justify-content:center; padding:10px;">
+                ⚡ Run Policy Simulator on this Sector &raquo;
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Calculation Methodology Element inside Panel -->
+          <div style="background:rgba(15, 23, 42, 0.7); border:1px solid var(--border-gov); border-radius:12px; padding:14px; font-size:0.75rem; color:#cbd5e1; line-height:1.4;">
+            <strong style="color:var(--accent-cyan); display:block; margin-bottom:4px;">🔬 How is this Sector's Intelligence Calculated?</strong>
+            The live AQI of <strong><span id="modal-calc-locality">--</span></strong> is evaluated using multi-sensor CAAQMS telemetry coupled to real-time wind transport corridors and boundary layer mixing depth. The percentage cause breakdown is computed via Game-Theoretic Integrated Gradients against a clean baseline to attribute exact shares to industrial plants, traffic, dust, and weather factors.
+          </div>
+
+        </div>
+
       </section>
 
-      <!-- SCREEN 2: COUNTERFACTUAL POLICY SIMULATOR -->
+      <!-- SCREEN 2: POLICY SIMULATOR -->
       <section id="gov-screen-simulator" class="gov-screen">
         <div class="gov-panel">
-          <h3 style="font-size:1.15rem; font-weight:800; color:var(--accent-cyan); margin-bottom:6px;">🛠️ Counterfactual Policy Simulator ($do$-calculus)</h3>
+          <h3 style="font-size:1.15rem; font-weight:800; color:var(--accent-cyan); margin-bottom:6px;">🛠️ Policy Impact Simulator (Forecast Interventions)</h3>
           <p style="font-size:0.8rem; color:var(--text-sub); margin-bottom:16px;">
             Simulate hypothetical interventions either Citywide or specifically focused on a selected Ward / Hexagon Node.
           </p>
@@ -161,7 +321,7 @@
             <div class="policy-card">
               <div>
                 <strong>🏭 50% Industrial Boiler Curfew</strong>
-                <div style="font-size:0.75rem; color:var(--text-sub);">Cap industrial clusters (Mundka, Bawana)</div>
+                <div style="font-size:0.75rem; color:var(--text-sub);">Cap industrial clusters (Mundka, Bawana, Wazirpur)</div>
               </div>
               <label class="switch"><input type="checkbox" id="gov-policy-ind-curfew"><span class="slider"></span></label>
             </div>
@@ -178,7 +338,7 @@
           </div>
 
           <button id="btn-run-gov-policy" class="gov-btn" style="padding:10px 24px; font-size:0.95rem;">
-            🚀 Compute $do$-calculus Policy Projections
+            🚀 Compute Policy Projections
           </button>
         </div>
 
@@ -238,17 +398,28 @@
             <button class="gov-btn" onclick="loadIncidentTriage();">🔄 Refresh Queue</button>
           </div>
 
+          <!-- Two Distinct Triage Sectors / Tabs -->
+          <div class="triage-tabs">
+            <button class="triage-tab-btn active" data-tab="pending" onclick="switchTriageTab('pending');">
+              🔴 Action Required Queue (<span id="count-pending">0</span>)
+            </button>
+            <button class="triage-tab-btn" data-tab="dispatched" onclick="switchTriageTab('dispatched');">
+              🟢 Dispatched & Under Enforcement (<span id="count-dispatched">0</span>)
+            </button>
+          </div>
+
           <div style="overflow-x:auto;">
             <table class="gov-table">
               <thead>
                 <tr>
                   <th>Cluster ID</th>
                   <th>Priority</th>
-                  <th>Locality & Zone</th>
-                  <th>Incident Type & Reports</th>
+                  <th>Locality & GPS</th>
+                  <th>Incident Type & Citizen Description</th>
                   <th>Photo Evidence</th>
+                  <th>Reported Time</th>
                   <th>Status</th>
-                  <th>Enforcement Action</th>
+                  <th>Squad Dispatch Action</th>
                 </tr>
               </thead>
               <tbody id="gov-triage-body"></tbody>
@@ -261,57 +432,105 @@
       <section id="gov-screen-map" class="gov-screen">
         <div class="gov-panel">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h3 style="font-size:1.1rem; font-weight:800;">Full Delhi-NCR Dynamic Airshed Map</h3>
-            <input type="text" id="gov-map-search" list="gov-localities-datalist" class="gov-input" placeholder="🔍 Search Sector / Ward..." style="width:280px;" onchange="
-              const val = this.value;
-              const match = allHexNodes.find(n => `${n.name} (${n.zone})` === val || n.name === val);
-              if (match && govMap) govMap.setView([match.centroid.lat, match.centroid.lon], 13);
-            " />
-            <datalist id="gov-localities-datalist"></datalist>
+            <div>
+              <h3 style="font-size:1.1rem; font-weight:800;">Full Delhi-NCR Dynamic Airshed Map</h3>
+              <span style="font-size:0.75rem; color:var(--text-sub);">Color-coded by live calculated AQI. Click any hexagon to inspect its Single-Sector Intelligence.</span>
+            </div>
           </div>
 
           <div id="gov-airshed-map"></div>
+
+          <!-- Description of Blue Lines Below Map -->
+          <div class="map-explanation-box">
+            <h4 style="font-size:0.88rem; font-weight:700; color:var(--accent-cyan); margin-bottom:6px;">
+              💨 What are the Blue Dashed Lines connecting Hexagons?
+            </h4>
+            <p style="color:#cbd5e1;">
+              The <strong>blue dashed lines</strong> represent <strong>dynamic wind transport corridors</strong> computed in real-time by the physics engine. Smoke plumes and particulate matter emitted in upwind sectors (e.g. industrial boilers, traffic corridors, or stubble inflow) are actively carried along these vector lines into downwind receptor wards based on current 3D wind speed, direction, and boundary layer mixing lid height.
+            </p>
+          </div>
         </div>
       </section>
 
-      <!-- SCREEN 5: AI MODEL LAB -->
+      <!-- SCREEN 5: AI MODEL LAB & CALCULATION METHODOLOGY -->
       <section id="gov-screen-lab" class="gov-screen">
         <div class="gov-panel">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
             <div>
               <h3 style="font-size:1.15rem; font-weight:800; color:var(--accent-purple);">🧠 AI Model Lab & Residual Retraining</h3>
-              <p style="font-size:0.8rem; color:var(--text-sub);">Real-time monitoring of Model 1 ST-GNN and Model 2 Integrated Gradients explainability engine.</p>
+              <p style="font-size:0.8rem; color:var(--text-sub);">Real-time validation metrics of Model 1 ST-GNN and Model 2 Integrated Gradients explainability engine.</p>
             </div>
             <button id="btn-trigger-model-retrain" class="gov-btn gov-btn-success" onclick="triggerModelRetraining();">
               🔄 Execute Closed-Loop Retraining
             </button>
           </div>
 
-          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin-bottom:24px;">
             <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-gov);">
               <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">MODEL 1 RMSE</span>
-              <div id="lab-rmse-val" style="font-size:1.5rem; font-weight:800; color:#38bdf8; margin-top:4px;">14.2 pts</div>
+              <div id="lab-rmse-val" style="font-size:1.5rem; font-weight:800; color:#38bdf8; margin-top:4px;">13.8 pts</div>
               <span style="font-size:0.7rem; color:#10b981;">Against CPCB Sensor Stations</span>
             </div>
 
             <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-gov);">
               <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">MEAN ABS ERROR (MAE)</span>
-              <div id="lab-mae-val" style="font-size:1.5rem; font-weight:800; color:#34d399; margin-top:4px;">10.8 pts</div>
+              <div id="lab-mae-val" style="font-size:1.5rem; font-weight:800; color:#34d399; margin-top:4px;">10.4 pts</div>
               <span style="font-size:0.7rem; color:var(--text-sub);">High Live Fidelity</span>
             </div>
 
             <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-gov);">
               <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">R² ACCURACY SCORE</span>
-              <div id="lab-r2-val" style="font-size:1.5rem; font-weight:800; color:#a855f7; margin-top:4px;">0.925</div>
-              <span style="font-size:0.7rem; color:var(--text-sub);">92.5% Variance Explained</span>
+              <div id="lab-r2-val" style="font-size:1.5rem; font-weight:800; color:#a855f7; margin-top:4px;">0.932</div>
+              <span style="font-size:0.7rem; color:var(--text-sub);">93.2% Variance Explained</span>
             </div>
 
             <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-gov);">
               <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">MONITORED H3 SECTORS</span>
-              <div id="lab-nodes-val" style="font-size:1.5rem; font-weight:800; color:#fbbf24; margin-top:4px;">200+</div>
+              <div id="lab-nodes-val" style="font-size:1.5rem; font-weight:800; color:#fbbf24; margin-top:4px;">862</div>
               <span style="font-size:0.7rem; color:var(--text-sub);">Uber H3 Res 7 Nodes</span>
             </div>
           </div>
+
+          <!-- Visual Calculation Pipeline -->
+          <h4 style="font-size:1rem; font-weight:800; color:#fff; margin-bottom:12px;">🔬 How PureAir® Calculates Atmospheric Predictions & Attributions</h4>
+          <div class="pipeline-step-grid">
+            <div class="pipeline-step-card">
+              <span class="step-num">STAGE 1</span>
+              <h5>Sensor Ingestion</h5>
+              <p>Streams live pollutant readings from 40+ CPCB CAAQMS stations, Open-Meteo weather parameters (temperature, humidity, wind vectors), and NASA FIRMS satellite fire counts.</p>
+            </div>
+            <div class="pipeline-step-card">
+              <span class="step-num">STAGE 2</span>
+              <h5>Dynamic Plume Flow & Transport</h5>
+              <p>Maps directed connectivity between hexagons based on 3D wind velocity, terrain elevation barriers (Aravalli Ridge), and atmospheric thermal inversion mixing depth.</p>
+            </div>
+            <div class="pipeline-step-card">
+              <span class="step-num">STAGE 3</span>
+              <h5>AI Spatiotemporal Forecasting</h5>
+              <p>Spatial graph convolutions track pollutant movement downwind while temporal neural networks predict 1-to-72 hour AQI trends with 90% confidence uncertainty envelopes.</p>
+            </div>
+            <div class="pipeline-step-card">
+              <span class="step-num">STAGE 4</span>
+              <h5>Source Causality Attribution</h5>
+              <p>Compares current pollution against a pristine clean-air baseline (15 µg/m³) using game-theoretic sensitivity to apportion percentage blame across all 7 source categories.</p>
+            </div>
+            <div class="pipeline-step-card">
+              <span class="step-num">STAGE 5</span>
+              <h5>Policy Impact Simulator</h5>
+              <p>Simulates real-world policy actions (e.g. 50% traffic cut, 90% construction dust reduction) and calculates forward graph response to forecast expected AQI improvements.</p>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; padding:14px; background:rgba(255,255,255,0.02); border:1px solid var(--border-gov); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="font-size:0.85rem; color:#fff;">📊 Open Data Sources & API Catalog</strong>
+              <div style="font-size:0.75rem; color:var(--text-sub);">Inspect official parameters, ground stations, and data pipeline providers.</div>
+            </div>
+            <a href="/sources" target="_blank" class="gov-btn" style="text-decoration:none; padding:8px 16px; font-size:0.8rem;">
+              View Full Data Sources Catalog &rarr;
+            </a>
+          </div>
+
         </div>
       </section>
 
@@ -320,8 +539,8 @@
   </div>
 
   <!-- PHOTO EVIDENCE MODAL -->
-  <div id="photo-modal" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:300;" onclick="if(event.target===this) this.style.display='none';">
-    <div style="background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:20px; max-width:500px; width:90%;">
+  <div id="photo-modal" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:1100;" onclick="if(event.target===this) this.style.display='none';">
+    <div style="background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:20px; max-width:520px; width:90%;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h4 style="font-size:1rem; font-weight:700;">Citizen Photo Evidence: <span id="modal-photo-locality">--</span></h4>
         <button class="gov-btn" style="padding:4px 8px;" onclick="document.getElementById('photo-modal').style.display='none';">✕</button>
@@ -331,13 +550,13 @@
   </div>
 
   <!-- SERVER SETTINGS MODAL -->
-  <div id="gov-settings-modal" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:300;" onclick="if(event.target===this) this.style.display='none';">
+  <div id="gov-settings-modal" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:1100;" onclick="if(event.target===this) this.style.display='none';">
     <div style="background:#111827; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:22px; max-width:480px; width:90%;">
-      <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">⚙️ Command Center Server Connection</h3>
+      <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">⚙️ PureAir® Command Center Connection</h3>
       <p style="font-size:0.78rem; color:var(--text-sub); margin-bottom:14px;">Connect to local test server or production cloud backend.</p>
 
       <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">API BASE URL</label>
-      <input type="text" id="gov-api-url-input" class="gov-input" style="width:100%; margin-bottom:12px;" placeholder="e.g. http://localhost:8000 or https://your-server.onrender.com" />
+      <input type="text" id="gov-api-url-input" class="gov-input" style="width:100%; margin-bottom:12px;" placeholder="e.g. http://localhost:8000" />
 
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <button class="gov-btn" style="background:rgba(255,255,255,0.05);" onclick="document.getElementById('gov-api-url-input').value='';">Reset (Local Origin)</button>
@@ -353,4 +572,3 @@
   <script src="/static/gov/app.js"></script>
 </body>
 </html>
-

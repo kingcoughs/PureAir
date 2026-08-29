@@ -7,7 +7,7 @@ import time
 import math
 import random
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class WeatherEngine:
     """
@@ -20,7 +20,7 @@ class WeatherEngine:
         self.last_fetch_time = 0.0
         self.cached_weather: Dict[str, Any] = {}
 
-    def get_current_weather(self, force_refresh: bool = False) -> Dict[str, Any]:
+    def get_current_weather(self, lat: Optional[float] = None, lon: Optional[float] = None, force_refresh: bool = False) -> Dict[str, Any]:
         """
         Returns atmospheric parameters:
         - temperature (°C)

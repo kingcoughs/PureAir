@@ -1,5 +1,5 @@
 """
-Server Startup Script for Project Meswak (FastAPI + Uvicorn)
+Server Startup Script for PureAir® (FastAPI + Uvicorn)
 """
 
 import sys

@@ -57,10 +57,19 @@ function initBottomNav() {
   });
 }
 
-// 3. Theme Toggle
+// 3. Theme Toggle & Logo Swapping
+function updateThemeLogos(theme) {
+  const isLight = theme === "light";
+  const logoSrc = isLight ? "/static/assets/delhi_govt_logo_light.png" : "/static/assets/delhi_govt_logo_dark.png";
+  document.querySelectorAll(".delhi-govt-logo-img, img[alt*='Delhi']").forEach(img => {
+    img.src = logoSrc;
+  });
+}
+
 function initTheme() {
   const savedTheme = localStorage.getItem("meswak_theme") || "dark";
   document.body.setAttribute("data-theme", savedTheme);
+  updateThemeLogos(savedTheme);
 }
 
 function toggleTheme() {
@@ -68,6 +77,7 @@ function toggleTheme() {
   const next = current === "dark" ? "light" : (current === "light" ? "amoled" : "dark");
   document.body.setAttribute("data-theme", next);
   localStorage.setItem("meswak_theme", next);
+  updateThemeLogos(next);
 }
 
 // Helper: Color by AQI value
@@ -95,16 +105,41 @@ async function loadAllHexagons() {
 
 function populateLocalitySearchList(nodes) {
   const datalist = document.getElementById("localities-datalist");
-  if (!datalist) return;
-  datalist.innerHTML = "";
+  const select = document.getElementById("citizen-city-select");
+  if (datalist) datalist.innerHTML = "";
+  if (select) {
+    select.innerHTML = `<option value="">📍 Select any Delhi-NCR Sector / Ward...</option>`;
+  }
+
   nodes.forEach(n => {
-    const opt = document.createElement("option");
-    opt.value = `${n.name} (${n.zone})`;
-    opt.setAttribute("data-lat", n.centroid.lat);
-    opt.setAttribute("data-lon", n.centroid.lon);
-    opt.setAttribute("data-hex", n.hex_id);
-    datalist.appendChild(opt);
+    if (datalist) {
+      const opt = document.createElement("option");
+      opt.value = `${n.name} (${n.zone})`;
+      opt.setAttribute("data-lat", n.centroid.lat);
+      opt.setAttribute("data-lon", n.centroid.lon);
+      opt.setAttribute("data-hex", n.hex_id);
+      datalist.appendChild(opt);
+    }
+    if (select) {
+      const sOpt = document.createElement("option");
+      sOpt.value = n.hex_id;
+      sOpt.textContent = `${n.name} (${n.zone})`;
+      select.appendChild(sOpt);
+    }
   });
+
+  if (select) {
+    select.addEventListener("change", (e) => {
+      const hId = e.target.value;
+      const found = allHexNodes.find(x => x.hex_id === hId);
+      if (found) {
+        currentLat = found.centroid.lat;
+        currentLon = found.centroid.lon;
+        loadLiveAQI(found.centroid.lat, found.centroid.lon);
+        loadForecast(found.centroid.lat, found.centroid.lon);
+      }
+    });
+  }
 }
 
 // 5. Load Live AQI & Primary Source Attribution
@@ -424,9 +459,15 @@ function renderMapHexagons() {
     `, { sticky: true });
 
     poly.on("click", () => {
+      currentLat = node.centroid.lat;
+      currentLon = node.centroid.lon;
+      const sel = document.getElementById("citizen-city-select");
+      if (sel) sel.value = node.hex_id;
       loadLiveAQI(node.centroid.lat, node.centroid.lon);
       loadForecast(node.centroid.lat, node.centroid.lon);
-      document.querySelector('[data-target="screen-home"]').click();
+      const homeBtn = document.querySelector('[data-target="screen-home"]');
+      if (homeBtn) homeBtn.click();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     poly.addTo(hexLayer);

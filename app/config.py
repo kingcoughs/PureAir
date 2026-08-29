@@ -50,7 +50,7 @@ class ModelConfig(BaseModel):
     SEQUENCE_LENGTH: int = 12             # 12 past steps (e.g. 12 past hours or 15-min intervals)
 
 class AppSettings(BaseModel):
-    APP_NAME: str = "Delhi-NCR AI Air Quality Engine (Project Meswak)"
+    APP_NAME: str = "Delhi-NCR AI Air Quality Engine (PureAir®)"
     VERSION: str = "1.0.0"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
