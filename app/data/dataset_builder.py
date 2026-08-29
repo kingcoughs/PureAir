@@ -7,7 +7,7 @@ import time
 import math
 import random
 import numpy as np
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 
 from app.config import grid_config, model_config, settings
 from app.grid.h3_grid import grid_manager

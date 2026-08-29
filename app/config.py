@@ -53,7 +53,7 @@ class AppSettings(BaseModel):
     APP_NAME: str = "Delhi-NCR AI Air Quality Engine (PureAir®)"
     VERSION: str = "1.0.0"
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = int(os.environ.get("PORT", 8000))
     DEBUG: bool = False
     
     # Pollutant feature names
